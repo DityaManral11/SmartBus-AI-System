@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
-import StudentNavbar from "../components/StudentNavbar";
+import Navbar from "../components/Navbar";
 
 export default function StudentLayout() {
   return (
@@ -10,7 +10,7 @@ export default function StudentLayout() {
 
       <div className="flex-1 ml-72 p-8">
 
-        <StudentNavbar />
+        <Navbar />
 
         <div className="mt-8">
 

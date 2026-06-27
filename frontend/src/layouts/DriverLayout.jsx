@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import DriverSidebar from "../components/DriverSidebar";
-import DriverNavbar from "../components/DriverNavbar";
+import Navbar from "../components/Navbar";
 
 export default function DriverLayout() {
   return (
@@ -10,7 +10,7 @@ export default function DriverLayout() {
 
       <div className="flex-1 ml-72 p-8">
 
-        <DriverNavbar />
+        <Navbar />
 
         <div className="mt-8">
 
