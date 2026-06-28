@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const menus = [
   {
@@ -44,6 +45,12 @@ const menus = [
 ];
 
 export default function DriverSidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/", { replace: true });
+  };
   return (
     <div className="fixed left-0 top-0 w-72 h-screen bg-slate-900 text-white flex flex-col justify-between shadow-2xl">
 
@@ -69,10 +76,9 @@ export default function DriverSidebar() {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-5 py-4 rounded-2xl mb-3 transition-all ${
-                  isActive
-                    ? "bg-gradient-to-r from-blue-600 to-cyan-500"
-                    : "hover:bg-slate-800"
+                `flex items-center gap-4 px-5 py-4 rounded-2xl mb-3 transition-all ${isActive
+                  ? "bg-gradient-to-r from-blue-600 to-cyan-500"
+                  : "hover:bg-slate-800"
                 }`
               }
             >
@@ -88,12 +94,12 @@ export default function DriverSidebar() {
 
       <div className="p-5 border-t border-slate-700">
 
-        <button className="flex items-center gap-3 text-red-400 hover:text-red-300">
-
-          <LogOut />
-
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 flex items-center gap-4 transition"
+        >
+          <LogOut size={22} />
           Logout
-
         </button>
 
       </div>

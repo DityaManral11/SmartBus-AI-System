@@ -11,12 +11,18 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
+
+
+
   const pageTitle =
     location.pathname.split("/").pop().replace("-", " ");
 
   const title =
     pageTitle.charAt(0).toUpperCase() +
     pageTitle.slice(1);
+
+
 
   return (
 
@@ -80,13 +86,7 @@ export default function Navbar() {
           />
         </div>
 
-        <button
-          onClick={() => navigate("/login")}
-          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded-xl transition"
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
+       
 
       </div>
 

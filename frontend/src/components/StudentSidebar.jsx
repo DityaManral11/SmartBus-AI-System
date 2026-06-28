@@ -9,6 +9,7 @@ import {
     LogOut,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const menus = [
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/student/dashboard" },
@@ -21,6 +22,12 @@ const menus = [
 ];
 
 export default function StudentSidebar() {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate("/", { replace: true });
+    };
     return (
         <div className="fixed left-0 top-0 w-72 h-screen bg-slate-900 text-white flex flex-col justify-between shadow-2xl z-50">
 
@@ -64,12 +71,12 @@ export default function StudentSidebar() {
 
             <div className="p-5 border-t border-slate-700">
 
-                <button className="flex items-center gap-3 text-red-400 hover:text-red-300">
-
-                    <LogOut />
-
+                <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 flex items-center gap-4 transition"
+                >
+                    <LogOut size={22} />
                     Logout
-
                 </button>
 
             </div>

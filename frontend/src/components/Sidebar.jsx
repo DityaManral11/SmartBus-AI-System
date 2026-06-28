@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 const menuItems = [
@@ -41,35 +42,45 @@ const menuItems = [
     path: "/admin/routes",
   },
   {
-  title: "Live Tracking",
-  icon: <MapPinned size={22} />,
-  path: "/admin/live-tracking",
-},
+    title: "Live Tracking",
+    icon: <MapPinned size={22} />,
+    path: "/admin/live-tracking",
+  },
   {
-  title: "Schedules",
-  icon: <CalendarDays size={22} />,
-  path: "/admin/schedules",
-},
+    title: "Schedules",
+    icon: <CalendarDays size={22} />,
+    path: "/admin/schedules",
+  },
   {
     title: "Analytics",
     icon: <BarChart3 size={22} />,
     path: "/admin/analytics",
   },
   {
-  title: "Reports",
-  icon: <FileText size={22} />,
-  path: "/admin/reports",
-},
+    title: "Reports",
+    icon: <FileText size={22} />,
+    path: "/admin/reports",
+  },
   {
     title: "Settings",
     icon: <Settings size={22} />,
     path: "/admin/settings",
   },
+
 ];
 
 export default function Sidebar() {
+
+
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/", { replace: true });
+  }
   return (
-    <aside className="w-72 bg-slate-900 text-white flex flex-col">
+    <aside className="w-72 h-screen bg-slate-900 text-white flex flex-col">
 
       {/* Logo */}
       <div className="h-20 flex items-center px-8 border-b border-slate-700">
@@ -89,17 +100,16 @@ export default function Sidebar() {
 
       {/* Menu */}
 
-      <div className="flex-1 mt-6 px-4">
+      <div className="flex-1 overflow-y-auto mt-6 px-4">
 
         {menuItems.map((item) => (
           <NavLink
             key={item.title}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-4 p-4 rounded-xl mb-3 transition-all duration-300 ${
-                isActive
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg"
-                  : "hover:bg-slate-800"
+              `flex items-center gap-4 p-4 rounded-xl mb-3 transition-all duration-300 ${isActive
+                ? "bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg"
+                : "hover:bg-slate-800"
               }`
             }
           >
@@ -112,14 +122,14 @@ export default function Sidebar() {
 
       {/* Logout */}
 
-      <div className="p-4">
+      <div className="p-4 border-t border-slate-700">
 
-        <button className="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 flex items-center gap-4 transition">
-
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 flex items-center gap-4 transition"
+        >
           <LogOut size={22} />
-
           Logout
-
         </button>
 
       </div>
