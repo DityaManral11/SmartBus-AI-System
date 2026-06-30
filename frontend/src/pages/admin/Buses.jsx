@@ -1,11 +1,19 @@
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import BusTable from "../../components/BusTable";
 import AddBusModal from "../../components/AddBusModal";
+import { useEffect, useState } from "react";
 
 export default function Buses() {
 
   const [open, setOpen] = useState(false);
+  const [buses, setBuses] = useState([]);
+
+  useEffect(() => {
+    const savedBuses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    setBuses(savedBuses);
+  }, []);
 
   return (
     <div>
@@ -86,9 +94,14 @@ export default function Buses() {
 
       </div>
 
-      <BusTable />
+      <BusTable buses={buses} setBuses={setBuses} />
 
-      <AddBusModal open={open} setOpen={setOpen} />
+      <AddBusModal
+        open={open}
+        setOpen={setOpen}
+        buses={buses}
+        setBuses={setBuses}
+      />
 
     </div>
   );

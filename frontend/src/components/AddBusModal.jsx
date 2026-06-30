@@ -1,4 +1,45 @@
-export default function AddBusModal({ open, setOpen }) {
+import { useState } from "react";
+
+export default function AddBusModal({
+  open,
+  setOpen,
+  buses,
+  setBuses,
+}) {
+  const [bus, setBus] = useState({
+    busNo: "",
+    driver: "",
+    route: "",
+    pickupPoints: "",
+  });
+
+  const handleSave = () => {
+    if (!bus.busNo || !bus.driver || !bus.route || !bus.pickupPoints) {
+      alert("Fill all fields");
+      return;
+    }
+
+    const updatedBuses = [...buses, bus];
+
+    setBuses(updatedBuses);
+
+    localStorage.setItem(
+      "buses",
+      JSON.stringify(updatedBuses)
+    );
+
+    alert("Bus Added Successfully");
+
+    setBus({
+      busNo: "",
+      driver: "",
+      route: "",
+      pickupPoints: "",
+    });
+
+    setOpen(false);
+  };
+
   if (!open) return null;
 
   return (
@@ -14,20 +55,57 @@ export default function AddBusModal({ open, setOpen }) {
 
           <input
             placeholder="Bus Number"
+            value={bus.busNo}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                busNo: e.target.value,
+              })
+            }
             className="w-full border p-3 rounded-xl"
           />
 
           <input
             placeholder="Driver Name"
+            value={bus.driver}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                driver: e.target.value,
+              })
+            }
             className="w-full border p-3 rounded-xl"
           />
 
           <input
             placeholder="Route"
+            value={bus.route}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                route: e.target.value,
+              })
+            }
             className="w-full border p-3 rounded-xl"
           />
 
+          <input
+            placeholder="Pickup Points (comma separated)"
+            value={bus.pickupPoints}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                pickupPoints: e.target.value,
+              })
+            }
+            className="w-full border p-3 rounded-xl"
+          />
+
+
+
         </div>
+
+
 
         <div className="flex justify-end gap-4 mt-8">
 
@@ -38,7 +116,10 @@ export default function AddBusModal({ open, setOpen }) {
             Cancel
           </button>
 
-          <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-105 transition">
+          <button
+            onClick={handleSave}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-105 transition"
+          >
             Save
           </button>
 

@@ -11,30 +11,40 @@ import {
 import { useEffect, useState } from "react";
 
 export default function Students() {
-  const buses = [
-    "BUS-01",
-    "BUS-02",
-    "BUS-03",
-    "BUS-04",
-    "BUS-05",
-    "BUS-06",
-    "BUS-07",
-  ];
-
-  const pickupPoints = [
-    "City Mall",
-    "Bus Stand",
-    "University Gate",
-    "North Campus",
-    "Engineering Block",
-    "Main Gate",
-  ];
-
+  const [buses, setBuses] = useState([]);
+  const [pickupPoints, setPickupPoints] = useState([]);
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [viewStudent, setViewStudent] = useState(null);
 
   useEffect(() => {
+
+    const savedBuses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    setBuses(savedBuses);
+
+    const allPickupPoints = savedBuses.flatMap((bus) =>
+      (bus.pickupPoints || "")
+        .split(",")
+        .map((point) => point.trim())
+        .filter((point) => point !== "")
+    );
+
+    setPickupPoints([...new Set(allPickupPoints)]);
+
+    setPickupPoints([...new Set(allPickupPoints)]);
+    const points = [];
+
+    savedBuses.forEach((bus) => {
+      if (bus.pickupPoints) {
+        bus.pickupPoints
+          .split(",")
+          .forEach((point) => points.push(point.trim()));
+      }
+    });
+
+    setPickupPoints([...new Set(points)]);
     const users = JSON.parse(localStorage.getItem("users")) || [];
 
     const studentList = users.filter(
@@ -42,6 +52,8 @@ export default function Students() {
     );
 
     setStudents(studentList);
+
+
   }, []);
 
   const [showForm, setShowForm] = useState(false);
@@ -101,6 +113,7 @@ export default function Students() {
       return;
     }
 
+
     const users = JSON.parse(localStorage.getItem("users")) || [];
 
     if (editEmail) {
@@ -113,6 +126,8 @@ export default function Students() {
           : user
       );
 
+
+
       localStorage.setItem("users", JSON.stringify(updatedUsers));
       setStudents(updatedUsers.filter((u) => u.role === "student"));
 
@@ -122,6 +137,7 @@ export default function Students() {
 
     } else {
       users.push({
+        id: Date.now(),
         ...newStudent,
         role: "student",
       });
@@ -132,8 +148,25 @@ export default function Students() {
       alert("Student Added Successfully");
     }
 
+    setNewStudent({
+      name: "",
+      email: "",
+      phone: "",
+      rollNo: "",
+      semester: "",
+      bus: "",
+      pickup: "",
+      password: "",
+    });
+
+    setShowForm(false);
+    setEditEmail(null);
+
+
 
   };
+
+
 
   const filteredStudents = students.filter(
     (student) =>
@@ -169,7 +202,22 @@ export default function Students() {
           </div>
 
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setEditEmail(null);
+
+              setNewStudent({
+                name: "",
+                email: "",
+                phone: "",
+                rollNo: "",
+                semester: "",
+                bus: "",
+                pickup: "",
+                password: "",
+              });
+
+              setShowForm(true);
+            }}
             className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
           >
             <div className="flex items-center gap-2">
@@ -319,8 +367,11 @@ export default function Students() {
               <option value="">Select Bus</option>
 
               {buses.map((bus) => (
-                <option key={bus} value={bus}>
-                  {bus}
+                <option
+                  key={bus.busNo}
+                  value={bus.busNo}
+                >
+                  {bus.busNo}
                 </option>
               ))}
             </select>
@@ -414,7 +465,7 @@ export default function Students() {
               {filteredStudents.map((student) => (
 
                 <tr
-                  key={student.id}
+                  key={student.email}
                   className="border-t hover:bg-slate-50 transition"
                 >
 
