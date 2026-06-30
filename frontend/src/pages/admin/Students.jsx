@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Search,
   Plus,
@@ -9,49 +8,137 @@ import {
   Bus,
   MapPinned,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Students() {
-  const [search, setSearch] = useState("");
-
-  const students = [
-    {
-      id: 1,
-      name: "Aman Kumar",
-      roll: "22CSE101",
-      bus: "BUS-07",
-      pickup: "City Mall",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      roll: "22CSE102",
-      bus: "BUS-03",
-      pickup: "Bus Stand",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Rahul Verma",
-      roll: "22CSE103",
-      bus: "BUS-05",
-      pickup: "University Gate",
-      status: "Inactive",
-    },
-    {
-      id: 4,
-      name: "Sneha Kumari",
-      roll: "22CSE104",
-      bus: "BUS-01",
-      pickup: "Engineering Block",
-      status: "Active",
-    },
+  const buses = [
+    "BUS-01",
+    "BUS-02",
+    "BUS-03",
+    "BUS-04",
+    "BUS-05",
+    "BUS-06",
+    "BUS-07",
   ];
+
+  const pickupPoints = [
+    "City Mall",
+    "Bus Stand",
+    "University Gate",
+    "North Campus",
+    "Engineering Block",
+    "Main Gate",
+  ];
+
+  const [students, setStudents] = useState([]);
+  const [search, setSearch] = useState("");
+  const [viewStudent, setViewStudent] = useState(null);
+
+  useEffect(() => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const studentList = users.filter(
+      (user) => user.role === "student"
+    );
+
+    setStudents(studentList);
+  }, []);
+
+  const [showForm, setShowForm] = useState(false);
+  const [editEmail, setEditEmail] = useState(null);
+
+  const handleEdit = (student) => {
+    setNewStudent({
+      name: student.name,
+      email: student.email,
+      phone: student.phone,
+      rollNo: student.rollNo,
+      semester: student.semester,
+      bus: student.bus || "",
+      pickup: student.pickup || "",
+      password: student.password,
+    });
+
+    setEditEmail(student.email);
+    setShowForm(true);
+  };
+
+  const [newStudent, setNewStudent] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    rollNo: "",
+    semester: "",
+    bus: "",
+    pickup: "",
+    password: "",
+  });
+
+  const handleDelete = (email) => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const updatedUsers = users.filter(
+      (user) => user.email !== email
+    );
+
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+    setStudents(
+      updatedUsers.filter((user) => user.role === "student")
+    );
+  };
+
+  const handleAddStudent = () => {
+    if (
+      !newStudent.name ||
+      !newStudent.email ||
+      !newStudent.phone ||
+      !newStudent.rollNo ||
+      !newStudent.semester ||
+      !newStudent.password
+    ) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    if (editEmail) {
+      const updatedUsers = users.map((user) =>
+        user.email === editEmail
+          ? {
+            ...newStudent,
+            role: "student",
+          }
+          : user
+      );
+
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+      setStudents(updatedUsers.filter((u) => u.role === "student"));
+
+      alert("Student Updated Successfully");
+
+      setEditEmail(null);
+
+    } else {
+      users.push({
+        ...newStudent,
+        role: "student",
+      });
+
+      localStorage.setItem("users", JSON.stringify(users));
+      setStudents(users.filter((u) => u.role === "student"));
+
+      alert("Student Added Successfully");
+    }
+
+
+  };
 
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(search.toLowerCase()) ||
-      student.roll.toLowerCase().includes(search.toLowerCase())
+      student.rollNo.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -81,16 +168,14 @@ export default function Students() {
 
           </div>
 
-          <button className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition">
-
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+          >
             <div className="flex items-center gap-2">
-
               <Plus size={18} />
-
               Add Student
-
             </div>
-
           </button>
 
         </div>
@@ -108,7 +193,7 @@ export default function Students() {
           <p className="mt-4">Total Students</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            520
+            {students.length}
           </h2>
 
         </div>
@@ -120,7 +205,7 @@ export default function Students() {
           <p className="mt-4">Assigned Bus</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            18
+            {students.filter((s) => s.bus).length}
           </h2>
 
         </div>
@@ -132,12 +217,146 @@ export default function Students() {
           <p className="mt-4">Active Students</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            486
+            {students.length}
           </h2>
 
         </div>
 
       </div>
+
+      {showForm && (
+        <div className="bg-white rounded-3xl shadow-xl p-6">
+
+          <h2 className="text-2xl font-bold mb-5">
+            {editEmail ? "Edit Student" : "Add Student"}
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-4">
+
+            <input
+              placeholder="Full Name"
+              value={newStudent.name}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  name: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <input
+              placeholder="Email"
+              value={newStudent.email}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  email: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <input
+              placeholder="Phone"
+              value={newStudent.phone}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  phone: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <input
+              placeholder="Roll No"
+              value={newStudent.rollNo}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  rollNo: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <input
+              placeholder="Semester"
+              value={newStudent.semester}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  semester: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={newStudent.password}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  password: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            />
+
+            <select
+              value={newStudent.bus}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  bus: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            >
+              <option value="">Select Bus</option>
+
+              {buses.map((bus) => (
+                <option key={bus} value={bus}>
+                  {bus}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={newStudent.pickup}
+              onChange={(e) =>
+                setNewStudent({
+                  ...newStudent,
+                  pickup: e.target.value,
+                })
+              }
+              className="border p-3 rounded-xl"
+            >
+              <option value="">Select Pickup Point</option>
+
+              {pickupPoints.map((point) => (
+                <option key={point} value={point}>
+                  {point}
+                </option>
+              ))}
+            </select>
+
+          </div>
+
+
+          <button
+            onClick={handleAddStudent}
+            className="mt-5 bg-blue-600 text-white px-6 py-3 rounded-xl"
+          >
+            {editEmail ? "Update Student" : "Save Student"}
+          </button>
+
+
+        </div>
+      )}
 
       {/* Search */}
 
@@ -207,37 +426,27 @@ export default function Students() {
 
                   <td className="p-5">
 
-                    {student.roll}
+                    {student.rollNo}
 
                   </td>
 
                   <td className="p-5">
-
-                    {student.bus}
-
+                    {student.bus || "Not Assigned"}
                   </td>
 
                   <td className="p-5">
 
                     <div className="flex items-center gap-2">
-
                       <MapPinned size={16} />
-
-                      {student.pickup}
-
+                      {student.pickup || "--"}
                     </div>
 
                   </td>
 
                   <td className="p-5">
 
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${student.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                        }`}
-                    >
-                      {student.status}
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700">
+                      Active
                     </span>
 
                   </td>
@@ -246,22 +455,27 @@ export default function Students() {
 
                     <div className="flex justify-center gap-3">
 
-                      <button className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-
+                      <button
+                        onClick={() => setViewStudent(student)}
+                        className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition"
+                      >
                         <Eye size={18} />
-
                       </button>
 
-                      <button className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition">
+                      <button
+                        onClick={() => handleEdit(student)}
+                        className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition"
+                      >
 
                         <Pencil size={18} />
 
                       </button>
 
-                      <button className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition">
-
+                      <button
+                        onClick={() => handleDelete(student.email)}
+                        className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition"
+                      >
                         <Trash2 size={18} />
-
                       </button>
 
                     </div>
@@ -291,10 +505,51 @@ export default function Students() {
 
           </table>
 
+          {viewStudent && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+              <div className="bg-white rounded-3xl p-8 w-[450px] shadow-2xl">
+
+                <h2 className="text-3xl font-bold mb-6 text-center">
+                  Student Details
+                </h2>
+
+                <div className="space-y-3">
+
+                  <p><b>Name:</b> {viewStudent.name}</p>
+
+                  <p><b>Email:</b> {viewStudent.email}</p>
+
+                  <p><b>Phone:</b> {viewStudent.phone}</p>
+
+                  <p><b>Roll No:</b> {viewStudent.rollNo}</p>
+
+                  <p><b>Semester:</b> {viewStudent.semester}</p>
+
+                  <p><b>Bus:</b> {viewStudent.bus || "Not Assigned"}</p>
+
+                  <p><b>Pickup:</b> {viewStudent.pickup || "Not Assigned"}</p>
+
+                </div>
+
+                <button
+                  onClick={() => setViewStudent(null)}
+                  className="mt-6 w-full bg-red-500 text-white py-3 rounded-xl"
+                >
+                  Close
+                </button>
+
+              </div>
+
+            </div>
+          )}
+
         </div>
 
       </div>
 
     </div>
   );
+
+
 }

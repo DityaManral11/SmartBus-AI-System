@@ -4,6 +4,7 @@ import BusTable from "../../components/BusTable";
 import AddBusModal from "../../components/AddBusModal";
 
 export default function Buses() {
+
   const [open, setOpen] = useState(false);
 
   return (
