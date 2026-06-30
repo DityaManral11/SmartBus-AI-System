@@ -1,25 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AddBusModal({
   open,
   setOpen,
   buses,
   setBuses,
+  editBus,
+  setEditBus,
 }) {
-  const [bus, setBus] = useState({
+  const emptyBus = {
     busNo: "",
     driver: "",
     route: "",
     pickupPoints: "",
-  });
+    status: "Running",
+  };
+
+  const [bus, setBus] = useState(emptyBus);
+
+  useEffect(() => {
+    if (editBus) {
+      setBus(editBus);
+    } else {
+      setBus(emptyBus);
+    }
+  }, [editBus, open]);
 
   const handleSave = () => {
-    if (!bus.busNo || !bus.driver || !bus.route || !bus.pickupPoints) {
-      alert("Fill all fields");
+    if (
+      !bus.busNo.trim() ||
+      !bus.driver.trim() ||
+      !bus.route.trim() ||
+      !bus.pickupPoints.trim()
+    ) {
+      alert("Please fill all fields.");
       return;
     }
 
-    const updatedBuses = [...buses, bus];
+    let updatedBuses = [];
+
+    if (editBus) {
+      updatedBuses = buses.map((b) =>
+        b.busNo === editBus.busNo ? bus : b
+      );
+
+      alert("Bus Updated Successfully");
+    } else {
+      const alreadyExists = buses.some(
+        (b) => b.busNo === bus.busNo
+      );
+
+      if (alreadyExists) {
+        alert("Bus Number already exists.");
+        return;
+      }
+
+      updatedBuses = [...buses, bus];
+
+      alert("Bus Added Successfully");
+    }
 
     setBuses(updatedBuses);
 
@@ -28,32 +67,32 @@ export default function AddBusModal({
       JSON.stringify(updatedBuses)
     );
 
-    alert("Bus Added Successfully");
-
-    setBus({
-      busNo: "",
-      driver: "",
-      route: "",
-      pickupPoints: "",
-    });
-
+    setBus(emptyBus);
+    setEditBus(null);
     setOpen(false);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setEditBus(null);
+    setBus(emptyBus);
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
 
-      <div className="bg-white w-[520px] rounded-[30px] shadow-2xl border border-slate-200 p-8">
+      <div className="bg-white w-[550px] rounded-3xl shadow-2xl p-8">
 
         <h2 className="text-3xl font-bold mb-6">
-          Add New Bus
+          {editBus ? "Edit Bus" : "Add New Bus"}
         </h2>
 
         <div className="space-y-4">
 
           <input
+            type="text"
             placeholder="Bus Number"
             value={bus.busNo}
             onChange={(e) =>
@@ -62,10 +101,11 @@ export default function AddBusModal({
                 busNo: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl"
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
+            type="text"
             placeholder="Driver Name"
             value={bus.driver}
             onChange={(e) =>
@@ -74,10 +114,11 @@ export default function AddBusModal({
                 driver: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl"
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
+            type="text"
             placeholder="Route"
             value={bus.route}
             onChange={(e) =>
@@ -86,10 +127,11 @@ export default function AddBusModal({
                 route: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl"
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
+            type="text"
             placeholder="Pickup Points (comma separated)"
             value={bus.pickupPoints}
             onChange={(e) =>
@@ -98,20 +140,31 @@ export default function AddBusModal({
                 pickupPoints: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl"
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-
+          <select
+            value={bus.status}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                status: e.target.value,
+              })
+            }
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="Running">Running</option>
+            <option value="Idle">Idle</option>
+            <option value="Maintenance">Maintenance</option>
+          </select>
 
         </div>
-
-
 
         <div className="flex justify-end gap-4 mt-8">
 
           <button
-            onClick={() => setOpen(false)}
-            className="px-5 py-3 rounded-xl bg-gray-200"
+            onClick={handleClose}
+            className="px-6 py-3 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
           >
             Cancel
           </button>
@@ -120,7 +173,7 @@ export default function AddBusModal({
             onClick={handleSave}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-105 transition"
           >
-            Save
+            {editBus ? "Update Bus" : "Save Bus"}
           </button>
 
         </div>

@@ -1,12 +1,12 @@
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import BusTable from "../../components/BusTable";
 import AddBusModal from "../../components/AddBusModal";
-import { useEffect, useState } from "react";
 
 export default function Buses() {
-
   const [open, setOpen] = useState(false);
   const [buses, setBuses] = useState([]);
+  const [editBus, setEditBus] = useState(null);
 
   useEffect(() => {
     const savedBuses =
@@ -16,69 +16,112 @@ export default function Buses() {
   }, []);
 
   return (
-    <div>
+    <div className="space-y-8">
+
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
 
-        <div>
-          <p className="text-blue-600 font-semibold">
-            University Transport System
-          </p>
+      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
 
-          <h1 className="text-5xl font-bold mt-2">
-            Bus Management
-          </h1>
+        <div className="flex items-center justify-between flex-wrap gap-4">
 
-          <p className="text-gray-500 mt-2">
-            Manage all university buses from one place.
-          </p>
+          <div>
+
+            <p className="text-blue-100 font-semibold">
+              University Transport System
+            </p>
+
+            <h1 className="text-4xl font-bold mt-2">
+              Bus Management
+            </h1>
+
+            <p className="text-blue-100 mt-2">
+              Manage all university buses from one place.
+            </p>
+
+          </div>
+
+          <button
+            onClick={() => {
+              setEditBus(null);
+              setOpen(true);
+            }}
+            className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+          >
+            <Plus className="inline mr-2" />
+            Add New Bus
+          </button>
+
         </div>
-
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-6 lg:mt-0 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-7 py-4 rounded-2xl shadow-xl hover:scale-105 transition"
-        >
-          <Plus className="inline mr-2" />
-          Add New Bus
-        </button>
 
       </div>
 
       {/* Stats */}
 
-      <div className="grid lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid md:grid-cols-4 gap-6">
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
+
           <p>Total Buses</p>
-          <h1 className="text-5xl font-bold mt-3">42</h1>
+
+          <h2 className="text-4xl font-bold mt-3">
+            {buses.length}
+          </h2>
+
         </div>
 
-        <div className="bg-green-500 text-white rounded-3xl p-6">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-6 text-white shadow-xl">
+
           <p>Running</p>
-          <h1 className="text-5xl font-bold mt-3">36</h1>
+
+          <h2 className="text-4xl font-bold mt-3">
+            {
+              buses.filter(
+                (bus) => bus.status === "Running"
+              ).length
+            }
+          </h2>
+
         </div>
 
-        <div className="bg-yellow-500 text-white rounded-3xl p-6">
+        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-3xl p-6 text-white shadow-xl">
+
           <p>Idle</p>
-          <h1 className="text-5xl font-bold mt-3">4</h1>
+
+          <h2 className="text-4xl font-bold mt-3">
+            {
+              buses.filter(
+                (bus) => bus.status === "Idle"
+              ).length
+            }
+          </h2>
+
         </div>
 
-        <div className="bg-red-500 text-white rounded-3xl p-6">
+        <div className="bg-gradient-to-r from-red-500 to-pink-500 rounded-3xl p-6 text-white shadow-xl">
+
           <p>Maintenance</p>
-          <h1 className="text-5xl font-bold mt-3">2</h1>
+
+          <h2 className="text-4xl font-bold mt-3">
+            {
+              buses.filter(
+                (bus) => bus.status === "Maintenance"
+              ).length
+            }
+          </h2>
+
         </div>
 
       </div>
 
-      {/* Search */}
+      {/* Search Section */}
 
-      <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">
+      <div className="bg-white rounded-3xl shadow-xl p-6">
 
         <div className="flex gap-4">
 
           <input
             placeholder="🔍 Search Bus..."
-            className="flex-1 border rounded-xl p-4"
+            className="flex-1 border rounded-xl p-4 outline-none"
           />
 
           <select className="border rounded-xl px-5">
@@ -94,13 +137,24 @@ export default function Buses() {
 
       </div>
 
-      <BusTable buses={buses} setBuses={setBuses} />
+      {/* Table */}
+
+      <BusTable
+        buses={buses}
+        setBuses={setBuses}
+        setOpen={setOpen}
+        setEditBus={setEditBus}
+      />
+
+      {/* Add/Edit Modal */}
 
       <AddBusModal
         open={open}
         setOpen={setOpen}
         buses={buses}
         setBuses={setBuses}
+        editBus={editBus}
+        setEditBus={setEditBus}
       />
 
     </div>
