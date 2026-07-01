@@ -8,12 +8,29 @@ export default function Buses() {
   const [buses, setBuses] = useState([]);
   const [editBus, setEditBus] = useState(null);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
   useEffect(() => {
     const savedBuses =
       JSON.parse(localStorage.getItem("buses")) || [];
 
     setBuses(savedBuses);
   }, []);
+
+  const filteredBuses = buses.filter((bus) => {
+    const matchesSearch =
+      bus.busNo.toLowerCase().includes(search.toLowerCase()) ||
+      bus.driver.toLowerCase().includes(search.toLowerCase()) ||
+      bus.route.toLowerCase().includes(search.toLowerCase()) ||
+      bus.pickupPoints.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      bus.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-8">
@@ -74,11 +91,7 @@ export default function Buses() {
           <p>Running</p>
 
           <h2 className="text-4xl font-bold mt-3">
-            {
-              buses.filter(
-                (bus) => bus.status === "Running"
-              ).length
-            }
+            {buses.filter((bus) => bus.status === "Running").length}
           </h2>
 
         </div>
@@ -88,11 +101,7 @@ export default function Buses() {
           <p>Idle</p>
 
           <h2 className="text-4xl font-bold mt-3">
-            {
-              buses.filter(
-                (bus) => bus.status === "Idle"
-              ).length
-            }
+            {buses.filter((bus) => bus.status === "Idle").length}
           </h2>
 
         </div>
@@ -102,35 +111,36 @@ export default function Buses() {
           <p>Maintenance</p>
 
           <h2 className="text-4xl font-bold mt-3">
-            {
-              buses.filter(
-                (bus) => bus.status === "Maintenance"
-              ).length
-            }
+            {buses.filter((bus) => bus.status === "Maintenance").length}
           </h2>
 
         </div>
 
       </div>
 
-      {/* Search Section */}
+      {/* Search & Filter */}
 
       <div className="bg-white rounded-3xl shadow-xl p-6">
 
         <div className="flex gap-4">
 
           <input
+            type="text"
             placeholder="🔍 Search Bus..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="flex-1 border rounded-xl p-4 outline-none"
           />
 
-          <select className="border rounded-xl px-5">
-
-            <option>All Status</option>
-            <option>Running</option>
-            <option>Idle</option>
-            <option>Maintenance</option>
-
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border rounded-xl px-5"
+          >
+            <option value="All">All Status</option>
+            <option value="Running">Running</option>
+            <option value="Idle">Idle</option>
+            <option value="Maintenance">Maintenance</option>
           </select>
 
         </div>
@@ -140,7 +150,7 @@ export default function Buses() {
       {/* Table */}
 
       <BusTable
-        buses={buses}
+        buses={filteredBuses}
         setBuses={setBuses}
         setOpen={setOpen}
         setEditBus={setEditBus}

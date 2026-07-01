@@ -1,35 +1,25 @@
-export default function RecentActivity() {
+import { useEffect, useState } from "react";
 
-  const activities = [
-    {
-      bus: "Bus-101",
-      driver: "Rahul",
-      status: "On Time",
-    },
-    {
-      bus: "Bus-102",
-      driver: "Aman",
-      status: "Delayed",
-    },
-    {
-      bus: "Bus-103",
-      driver: "Vikas",
-      status: "Running",
-    },
-    {
-      bus: "Bus-104",
-      driver: "Rohit",
-      status: "Completed",
-    },
-  ];
+export default function RecentActivity() {
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const recent = buses
+      .slice()
+      .reverse()
+      .slice(0, 5);
+
+    setActivities(recent);
+  }, []);
 
   return (
     <div className="bg-white rounded-3xl shadow-lg p-6">
 
       <h2 className="text-2xl font-bold mb-5">
-
         Recent Activity
-
       </h2>
 
       <table className="w-full">
@@ -50,39 +40,50 @@ export default function RecentActivity() {
 
         <tbody>
 
-          {activities.map((item) => (
+          {activities.length > 0 ? (
+            activities.map((item, index) => (
 
-            <tr key={item.bus} className="border-b">
+              <tr key={index} className="border-b">
 
-              <td className="py-4">
-                {item.bus}
-              </td>
+                <td className="py-4">
+                  {item.busNo}
+                </td>
 
-              <td>
-                {item.driver}
-              </td>
+                <td>
+                  {item.driver}
+                </td>
 
-              <td>
+                <td>
 
-                <span
-                  className={`px-3 py-1 rounded-full text-sm text-white ${
-                    item.status === "Delayed"
-                      ? "bg-red-500"
-                      : item.status === "Running"
-                      ? "bg-blue-500"
-                      : item.status === "Completed"
-                      ? "bg-green-500"
-                      : "bg-yellow-500"
-                  }`}
-                >
-                  {item.status}
-                </span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm text-white ${
+                      item.status === "Running"
+                        ? "bg-green-500"
+                        : item.status === "Idle"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
+                  >
+                    {item.status}
+                  </span>
 
+                </td>
+
+              </tr>
+
+            ))
+          ) : (
+            <tr>
+
+              <td
+                colSpan="3"
+                className="text-center py-6 text-gray-500"
+              >
+                No Recent Activity
               </td>
 
             </tr>
-
-          ))}
+          )}
 
         </tbody>
 
