@@ -7,6 +7,7 @@ export default function Buses() {
   const [open, setOpen] = useState(false);
   const [buses, setBuses] = useState([]);
   const [editBus, setEditBus] = useState(null);
+  const [drivers, setDrivers] = useState([]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -16,6 +17,11 @@ export default function Buses() {
       JSON.parse(localStorage.getItem("buses")) || [];
 
     setBuses(savedBuses);
+
+    const savedDrivers =
+      JSON.parse(localStorage.getItem("drivers")) || [];
+
+    setDrivers(savedDrivers);
   }, []);
 
   const filteredBuses = buses.filter((bus) => {
@@ -165,6 +171,7 @@ export default function Buses() {
         setBuses={setBuses}
         editBus={editBus}
         setEditBus={setEditBus}
+        drivers={drivers}
       />
 
     </div>

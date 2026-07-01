@@ -54,8 +54,10 @@ export default function BusTable({
               </td>
 
               <td className="p-4">
-                {bus.pickupPoints}
-              </td>
+  <div className="max-w-[250px] truncate" title={bus.pickupPoints}>
+    {bus.pickupPoints}
+  </div>
+</td>
 
               <td className="p-4 text-center">
                 <span

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -11,48 +11,54 @@ import {
   Bus,
 } from "lucide-react";
 
+import AddDriverModal from "../../components/AddDriverModal";
+
 export default function Drivers() {
+  const [drivers, setDrivers] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [editDriver, setEditDriver] = useState(null);
+  const [viewDriver, setViewDriver] = useState(null);
+  const [buses, setBuses] = useState([]);
+
+  useEffect(() => {
+    const savedDrivers =
+      JSON.parse(localStorage.getItem("drivers")) || [];
+
+    setDrivers(savedDrivers);
+
+    const savedBuses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    setBuses(savedBuses);
+  }, []);
+
   const [search, setSearch] = useState("");
 
-  const drivers = [
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      phone: "+91 9876543210",
-      email: "rahul@gmail.com",
-      bus: "BUS-07",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Amit Kumar",
-      phone: "+91 9876543211",
-      email: "amit@gmail.com",
-      bus: "BUS-05",
-      status: "On Leave",
-    },
-    {
-      id: 3,
-      name: "Vivek Singh",
-      phone: "+91 9876543212",
-      email: "vivek@gmail.com",
-      bus: "BUS-02",
-      status: "Inactive",
-    },
-    {
-      id: 4,
-      name: "Rakesh Verma",
-      phone: "+91 9876543213",
-      email: "rakesh@gmail.com",
-      bus: "BUS-09",
-      status: "Active",
-    },
-  ];
+
+
+  const handleDelete = (email) => {
+    if (!window.confirm("Delete this driver?")) return;
+
+    const updatedDrivers = drivers.filter(
+      (driver) => driver.email !== email
+    );
+
+    setDrivers(updatedDrivers);
+
+    localStorage.setItem(
+      "drivers",
+      JSON.stringify(updatedDrivers)
+    );
+  };
 
   const filteredDrivers = drivers.filter(
     (driver) =>
-      driver.name.toLowerCase().includes(search.toLowerCase()) ||
-      driver.bus.toLowerCase().includes(search.toLowerCase())
+      driver.name
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      driver.bus
+        .toLowerCase()
+        .includes(search.toLowerCase())
   );
 
   return (
@@ -62,7 +68,7 @@ export default function Drivers() {
 
       <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
 
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex justify-between items-center flex-wrap gap-4">
 
           <div>
 
@@ -75,15 +81,18 @@ export default function Drivers() {
             </h1>
 
             <p className="mt-2 text-blue-100">
-
               Manage all bus drivers.
-
             </p>
 
           </div>
 
-          <button className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition">
-
+          <button
+            onClick={() => {
+              setEditDriver(null);
+              setOpen(true);
+            }}
+            className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+          >
             <div className="flex items-center gap-2">
 
               <Plus size={18} />
@@ -91,7 +100,6 @@ export default function Drivers() {
               Add Driver
 
             </div>
-
           </button>
 
         </div>
@@ -106,9 +114,13 @@ export default function Drivers() {
 
           <Users size={34} />
 
-          <p className="mt-4">Total Drivers</p>
+          <p className="mt-4">
+            Total Drivers
+          </p>
 
-          <h2 className="text-3xl font-bold mt-2">24</h2>
+          <h2 className="text-3xl font-bold mt-2">
+            {drivers.length}
+          </h2>
 
         </div>
 
@@ -116,9 +128,18 @@ export default function Drivers() {
 
           <Bus size={34} />
 
-          <p className="mt-4">Active Drivers</p>
+          <p className="mt-4">
+            Active Drivers
+          </p>
 
-          <h2 className="text-3xl font-bold mt-2">20</h2>
+          <h2 className="text-3xl font-bold mt-2">
+            {
+              drivers.filter(
+                (driver) =>
+                  driver.status === "Active"
+              ).length
+            }
+          </h2>
 
         </div>
 
@@ -126,9 +147,18 @@ export default function Drivers() {
 
           <Users size={34} />
 
-          <p className="mt-4">On Leave</p>
+          <p className="mt-4">
+            On Leave
+          </p>
 
-          <h2 className="text-3xl font-bold mt-2">4</h2>
+          <h2 className="text-3xl font-bold mt-2">
+            {
+              drivers.filter(
+                (driver) =>
+                  driver.status === "On Leave"
+              ).length
+            }
+          </h2>
 
         </div>
 
@@ -147,10 +177,12 @@ export default function Drivers() {
 
           <input
             type="text"
-            placeholder="Search driver..."
+            placeholder="Search Driver..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 py-4 border rounded-2xl focus:ring-2 focus:ring-cyan-500 outline-none"
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="w-full pl-12 py-4 border rounded-2xl outline-none focus:ring-2 focus:ring-cyan-500"
           />
 
         </div>
@@ -169,17 +201,29 @@ export default function Drivers() {
 
               <tr>
 
-                <th className="text-left p-5">Driver</th>
+                <th className="text-left p-5">
+                  Driver
+                </th>
 
-                <th className="text-left p-5">Phone</th>
+                <th className="text-left p-5">
+                  Phone
+                </th>
 
-                <th className="text-left p-5">Email</th>
+                <th className="text-left p-5">
+                  Email
+                </th>
 
-                <th className="text-left p-5">Bus</th>
+                <th className="text-left p-5">
+                  Bus
+                </th>
 
-                <th className="text-left p-5">Status</th>
+                <th className="text-left p-5">
+                  Status
+                </th>
 
-                <th className="text-center p-5">Actions</th>
+                <th className="text-center p-5">
+                  Actions
+                </th>
 
               </tr>
 
@@ -188,15 +232,14 @@ export default function Drivers() {
             <tbody>
 
               {filteredDrivers.map((driver) => (
+
                 <tr
-                  key={driver.id}
-                  className="border-t hover:bg-slate-50 transition"
+                  key={driver.email}
+                  className="border-t hover:bg-slate-50"
                 >
 
                   <td className="p-5 font-semibold">
-
                     {driver.name}
-
                   </td>
 
                   <td className="p-5">
@@ -225,18 +268,13 @@ export default function Drivers() {
 
                   <td className="p-5">
 
-                    {driver.bus}
-
-                  </td>
-
-                  <td className="p-5">
-
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-semibold ${driver.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : driver.status === "On Leave"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                        ? "bg-green-100 text-green-700"
+                        : driver.status ===
+                          "On Leave"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
                         }`}
                     >
                       {driver.status}
@@ -248,22 +286,32 @@ export default function Drivers() {
 
                     <div className="flex justify-center gap-3">
 
-                      <button className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-
+                      <button
+                        onClick={() =>
+                          setViewDriver(driver)
+                        }
+                        className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white"
+                      >
                         <Eye size={18} />
-
                       </button>
 
-                      <button className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition">
-
+                      <button
+                        onClick={() => {
+                          setEditDriver(driver);
+                          setOpen(true);
+                        }}
+                        className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white"
+                      >
                         <Pencil size={18} />
-
                       </button>
 
-                      <button className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition">
-
+                      <button
+                        onClick={() =>
+                          handleDelete(driver.email)
+                        }
+                        className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
+                      >
                         <Trash2 size={18} />
-
                       </button>
 
                     </div>
@@ -271,22 +319,17 @@ export default function Drivers() {
                   </td>
 
                 </tr>
-
               ))}
 
               {filteredDrivers.length === 0 && (
-
                 <tr>
-
                   <td
                     colSpan="6"
                     className="text-center py-10 text-gray-500"
                   >
                     No drivers found.
                   </td>
-
                 </tr>
-
               )}
 
             </tbody>
@@ -296,6 +339,65 @@ export default function Drivers() {
         </div>
 
       </div>
+
+      {/* View Driver Modal */}
+
+      {viewDriver && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+          <div className="bg-white rounded-3xl p-8 w-[450px] shadow-2xl">
+
+            <h2 className="text-3xl font-bold mb-6 text-center">
+              Driver Details
+            </h2>
+
+            <div className="space-y-4">
+
+              <p>
+                <b>Name:</b> {viewDriver.name}
+              </p>
+
+              <p>
+                <b>Phone:</b> {viewDriver.phone}
+              </p>
+
+              <p>
+                <b>Email:</b> {viewDriver.email}
+              </p>
+
+              <p>
+                <b>Assigned Bus:</b> {viewDriver.bus}
+              </p>
+
+              <p>
+                <b>Status:</b> {viewDriver.status}
+              </p>
+
+            </div>
+
+            <button
+              onClick={() => setViewDriver(null)}
+              className="mt-6 w-full bg-red-500 text-white py-3 rounded-xl hover:bg-red-600 transition"
+            >
+              Close
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* Add / Edit Driver Modal */}
+
+      <AddDriverModal
+        open={open}
+        setOpen={setOpen}
+        drivers={drivers}
+        setDrivers={setDrivers}
+        buses={buses}
+        editDriver={editDriver}
+        setEditDriver={setEditDriver}
+      />
 
     </div>
   );

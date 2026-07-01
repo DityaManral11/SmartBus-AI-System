@@ -1,59 +1,74 @@
-import { useState } from "react";
-import {
-  Search,
-  Plus,
-  Eye,
-  Pencil,
-  Trash2,
-  Route,
-  Bus,
-  UserCog,
-  MapPinned,
-} from "lucide-react";
+import { Route } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Routes() {
+  const [buses, setBuses] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [viewRoute, setViewRoute] = useState(null);
 
-  const routes = [
-    {
-      id: 1,
-      route: "North Campus",
-      bus: "BUS-07",
-      driver: "Rahul Sharma",
-      stops: 8,
-      status: "Active",
-    },
-    {
-      id: 2,
-      route: "City Center",
-      bus: "BUS-03",
-      driver: "Amit Kumar",
-      stops: 6,
-      status: "Active",
-    },
-    {
-      id: 3,
-      route: "South Colony",
-      bus: "BUS-05",
-      driver: "Vivek Singh",
-      stops: 10,
-      status: "Inactive",
-    },
-    {
-      id: 4,
-      route: "Engineering Block",
-      bus: "BUS-09",
-      driver: "Rakesh Verma",
-      stops: 5,
-      status: "Active",
-    },
-  ];
+  useEffect(() => {
+    const loadBuses = () => {
+      const saved =
+        JSON.parse(localStorage.getItem("buses")) || [];
 
-  const filteredRoutes = routes.filter(
-    (item) =>
-      item.route.toLowerCase().includes(search.toLowerCase()) ||
-      item.bus.toLowerCase().includes(search.toLowerCase()) ||
-      item.driver.toLowerCase().includes(search.toLowerCase())
+      setBuses(saved);
+    };
+
+    loadBuses();
+
+    window.addEventListener("storage", loadBuses);
+
+    return () =>
+      window.removeEventListener(
+        "storage",
+        loadBuses
+      );
+  }, []);
+
+  const routes = useMemo(() => {
+    const map = {};
+
+    buses.forEach((bus) => {
+      if (!bus.route) return;
+
+      if (!map[bus.route]) {
+        map[bus.route] = {
+          routeName: bus.route,
+          pickupPoints: bus.pickupPoints || "",
+          status: "Active",
+          assignedBuses: 1,
+        };
+      } else {
+        map[bus.route].assignedBuses++;
+      }
+    });
+
+    return Object.values(map);
+  }, [buses]);
+
+  const filteredRoutes = routes.filter((route) => {
+    const matchesSearch =
+      route.routeName
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All"
+        ? true
+        : route.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalStops = routes.reduce(
+    (total, route) =>
+      total +
+      route.pickupPoints
+        .split(",")
+        .filter((point) => point.trim() !== "")
+        .length,
+    0
   );
 
   return (
@@ -63,7 +78,7 @@ export default function Routes() {
 
       <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
 
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center justify-between">
 
           <div>
 
@@ -71,29 +86,17 @@ export default function Routes() {
 
               <Route size={38} />
 
-              Routes
+              Route Management
 
             </h1>
 
             <p className="mt-2 text-blue-100">
 
-              Manage all bus routes.
+              Routes are generated automatically from buses.
 
             </p>
 
           </div>
-
-          <button className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition">
-
-            <div className="flex items-center gap-2">
-
-              <Plus size={18} />
-
-              Add Route
-
-            </div>
-
-          </button>
 
         </div>
 
@@ -105,66 +108,75 @@ export default function Routes() {
 
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Route size={34} />
+          <p>Total Routes</p>
 
-          <p className="mt-4">Total Routes</p>
-
-          <h2 className="text-3xl font-bold mt-2">
-            12
+          <h2 className="text-4xl font-bold mt-3">
+            {routes.length}
           </h2>
 
         </div>
 
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Bus size={34} />
+          <p>Assigned Buses</p>
 
-          <p className="mt-4">Assigned Buses</p>
-
-          <h2 className="text-3xl font-bold mt-2">
-            10
+          <h2 className="text-4xl font-bold mt-3">
+            {buses.length}
           </h2>
 
         </div>
 
         <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <MapPinned size={34} />
+          <p>Total Stops</p>
 
-          <p className="mt-4">Total Stops</p>
-
-          <h2 className="text-3xl font-bold mt-2">
-            67
+          <h2 className="text-4xl font-bold mt-3">
+            {totalStops}
           </h2>
 
         </div>
 
       </div>
 
-      {/* Search */}
+            {/* Search & Filter */}
 
-      <div className="bg-white rounded-3xl shadow-xl p-5">
+      <div className="bg-white rounded-3xl shadow-xl p-6">
 
-        <div className="relative">
-
-          <Search
-            className="absolute left-4 top-4 text-gray-400"
-            size={20}
-          />
+        <div className="grid md:grid-cols-2 gap-4">
 
           <input
             type="text"
-            placeholder="Search route..."
+            placeholder="Search Route..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 py-4 border rounded-2xl focus:ring-2 focus:ring-cyan-500 outline-none"
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="border rounded-xl p-4 outline-none focus:ring-2 focus:ring-cyan-500"
           />
+
+          <select
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(e.target.value)
+            }
+            className="border rounded-xl p-4 outline-none"
+          >
+
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Active">
+              Active
+            </option>
+
+          </select>
 
         </div>
 
       </div>
 
-      {/* Table */}
+      {/* Routes Table */}
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
 
@@ -176,12 +188,29 @@ export default function Routes() {
 
               <tr>
 
-                <th className="text-left p-5">Route</th>
-                <th className="text-left p-5">Bus</th>
-                <th className="text-left p-5">Driver</th>
-                <th className="text-left p-5">Stops</th>
-                <th className="text-left p-5">Status</th>
-                <th className="text-center p-5">Actions</th>
+                <th className="text-left p-5">
+                  Route
+                </th>
+
+                <th className="text-left p-5">
+                  Pickup Points
+                </th>
+
+                <th className="text-center p-5">
+                  Total Stops
+                </th>
+
+                <th className="text-center p-5">
+                  Assigned Buses
+                </th>
+
+                <th className="text-center p-5">
+                  Status
+                </th>
+
+                <th className="text-center p-5">
+                  Action
+                </th>
 
               </tr>
 
@@ -189,81 +218,7 @@ export default function Routes() {
 
             <tbody>
 
-              {filteredRoutes.map((item) => (
-
-                <tr
-                  key={item.id}
-                  className="border-t hover:bg-slate-50 transition"
-                >
-
-                  <td className="p-5 font-semibold">
-                    {item.route}
-                  </td>
-
-                  <td className="p-5">
-                    {item.bus}
-                  </td>
-
-                  <td className="p-5">
-
-                    <div className="flex items-center gap-2">
-
-                      <UserCog size={16} />
-
-                      {item.driver}
-
-                    </div>
-
-                  </td>
-
-                  <td className="p-5">
-                    {item.stops} Stops
-                  </td>
-
-                  <td className="p-5">
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${item.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                        }`}
-                    >
-                      {item.status}
-                    </span>
-
-                  </td>
-
-                  <td className="p-5">
-
-                    <div className="flex justify-center gap-3">
-
-                      <button className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-
-                        <Eye size={18} />
-
-                      </button>
-
-                      <button className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition">
-
-                        <Pencil size={18} />
-
-                      </button>
-
-                      <button className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition">
-
-                        <Trash2 size={18} />
-
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-              {filteredRoutes.length === 0 && (
+              {filteredRoutes.length === 0 ? (
 
                 <tr>
 
@@ -271,10 +226,90 @@ export default function Routes() {
                     colSpan="6"
                     className="text-center py-10 text-gray-500"
                   >
-                    No routes found.
+
+                    No Routes Found
+
                   </td>
 
                 </tr>
+
+              ) : (
+
+                filteredRoutes.map((route, index) => {
+
+                  const stops =
+                    route.pickupPoints
+                      .split(",")
+                      .filter(
+                        (point) =>
+                          point.trim() !== ""
+                      ).length;
+
+                  return (
+
+                    <tr
+                      key={index}
+                      className="border-t hover:bg-slate-50 transition"
+                    >
+
+                      <td className="p-5 font-semibold">
+
+                        {route.routeName}
+
+                      </td>
+
+                      <td className="p-5">
+
+                        <div className="max-w-[320px] truncate">
+
+                          {route.pickupPoints}
+
+                        </div>
+
+                      </td>
+
+                      <td className="text-center">
+
+                        {stops}
+
+                      </td>
+
+                      <td className="text-center">
+
+                        {route.assignedBuses}
+
+                      </td>
+
+                      <td className="text-center">
+
+                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+
+                          Active
+
+                        </span>
+
+                      </td>
+
+                      <td className="text-center">
+
+                        <button
+                          onClick={() =>
+                            setViewRoute(route)
+                          }
+                          className="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
+                        >
+
+                          View
+
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  );
+
+                })
 
               )}
 
@@ -285,7 +320,116 @@ export default function Routes() {
         </div>
 
       </div>
+            {/* View Route Modal */}
+
+      {viewRoute && (
+
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div className="bg-white w-[550px] rounded-3xl shadow-2xl p-8">
+
+            <h2 className="text-3xl font-bold mb-6">
+              Route Details
+            </h2>
+
+            <div className="space-y-5">
+
+              <div className="flex justify-between border-b pb-3">
+
+                <span className="font-semibold">
+                  Route Name
+                </span>
+
+                <span>
+                  {viewRoute.routeName}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between border-b pb-3">
+
+                <span className="font-semibold">
+                  Pickup Points
+                </span>
+
+                <span className="text-right max-w-[260px] break-words">
+                  {viewRoute.pickupPoints}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between border-b pb-3">
+
+                <span className="font-semibold">
+                  Total Stops
+                </span>
+
+                <span>
+
+                  {
+                    viewRoute.pickupPoints
+                      .split(",")
+                      .filter(
+                        (point) =>
+                          point.trim() !== ""
+                      ).length
+                  }
+
+                </span>
+
+              </div>
+
+              <div className="flex justify-between border-b pb-3">
+
+                <span className="font-semibold">
+                  Assigned Buses
+                </span>
+
+                <span>
+
+                  {viewRoute.assignedBuses}
+
+                </span>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="font-semibold">
+                  Status
+                </span>
+
+                <span className="px-3 py-1 rounded-full bg-green-500 text-white">
+
+                  Active
+
+                </span>
+
+              </div>
+
+            </div>
+
+            <div className="flex justify-end mt-8">
+
+              <button
+                onClick={() => setViewRoute(null)}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-105 transition"
+              >
+
+                Close
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </div>
+
   );
+
 }

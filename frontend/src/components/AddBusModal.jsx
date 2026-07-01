@@ -7,6 +7,7 @@ export default function AddBusModal({
   setBuses,
   editBus,
   setEditBus,
+  drivers,
 }) {
   const emptyBus = {
     busNo: "",
@@ -104,9 +105,7 @@ export default function AddBusModal({
             className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          <input
-            type="text"
-            placeholder="Driver Name"
+          <select
             value={bus.driver}
             onChange={(e) =>
               setBus({
@@ -114,12 +113,20 @@ export default function AddBusModal({
                 driver: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            className="w-full border p-3 rounded-xl"
+          >
+            <option value="">Select Driver</option>
+
+            {drivers.map((driver) => (
+              <option key={driver.email} value={driver.name}>
+                {driver.name}
+              </option>
+            ))}
+          </select>
 
           <input
             type="text"
-            placeholder="Route"
+            placeholder="Route Name"
             value={bus.route}
             onChange={(e) =>
               setBus({
@@ -130,9 +137,11 @@ export default function AddBusModal({
             className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          <input
-            type="text"
-            placeholder="Pickup Points (comma separated)"
+          <textarea
+            rows={4}
+            placeholder="Pickup Points (comma separated)
+Example:
+Gate 1, Railway Station, Main Market, College"
             value={bus.pickupPoints}
             onChange={(e) =>
               setBus({
@@ -140,7 +149,7 @@ export default function AddBusModal({
                 pickupPoints: e.target.value,
               })
             }
-            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border p-3 rounded-xl outline-none resize-none focus:ring-2 focus:ring-blue-500"
           />
 
           <select
