@@ -21,10 +21,14 @@ export default function Drivers() {
   const [buses, setBuses] = useState([]);
 
   useEffect(() => {
-    const savedDrivers =
-      JSON.parse(localStorage.getItem("drivers")) || [];
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
 
-    setDrivers(savedDrivers);
+    const driversData = users.filter(
+      (user) => user.role === "driver"
+    );
+
+    setDrivers(driversData);
 
     const savedBuses =
       JSON.parse(localStorage.getItem("buses")) || [];
@@ -39,15 +43,22 @@ export default function Drivers() {
   const handleDelete = (email) => {
     if (!window.confirm("Delete this driver?")) return;
 
-    const updatedDrivers = drivers.filter(
-      (driver) => driver.email !== email
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const updatedUsers = users.filter(
+      (user) => user.email !== email
     );
 
-    setDrivers(updatedDrivers);
-
     localStorage.setItem(
-      "drivers",
-      JSON.stringify(updatedDrivers)
+      "users",
+      JSON.stringify(updatedUsers)
+    );
+
+    setDrivers(
+      updatedUsers.filter(
+        (user) => user.role === "driver"
+      )
     );
   };
 

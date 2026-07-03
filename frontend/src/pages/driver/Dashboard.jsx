@@ -8,19 +8,69 @@ import {
   User,
   Phone,
   Navigation,
+  Mail,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
+
 export default function DriverDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [driver, setDriver] = useState(null);
+  const [assignedBus, setAssignedBus] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || null;
+
+    if (!currentUser) return;
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const drivers = users.filter(
+      (user) => user.role?.toLowerCase() === "driver"
+    );
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    // Logged-in driver
+    const foundDriver = drivers.find(
+      (d) => d.email === currentUser.email
+    );
+
+    setDriver(foundDriver || currentUser);
+
+    if (foundDriver) {
+      // Assigned Bus
+      const bus = buses.find(
+        (b) => b.busNo === foundDriver.bus
+      );
+
+      setAssignedBus(bus);
+
+      // Schedule
+      const driverSchedule = schedules.find(
+        (s) => s.busNo === foundDriver.bus
+      );
+
+      setSchedule(driverSchedule);
+    }
+  }, []);
+
   return (
     <div className="space-y-8">
 
+
       {/* Header */}
 
-      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl" >
 
         <h1 className="text-4xl font-bold">
-          👋 Welcome, {user?.name}
+          👋 Welcome, {driver?.name || "Driver"}
         </h1>
 
         <p className="mt-3 text-blue-100">
@@ -31,7 +81,7 @@ export default function DriverDashboard() {
 
       {/* Top Cards */}
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6" >
 
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
 
@@ -42,7 +92,7 @@ export default function DriverDashboard() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            BUS-07
+            {assignedBus?.busNo || "Not Assigned"}
           </h2>
 
         </div>
@@ -52,11 +102,11 @@ export default function DriverDashboard() {
           <Users size={36} />
 
           <p className="mt-4 text-white/80">
-            Students
+            Capacity
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            42
+            {assignedBus?.capacity || 0}
           </h2>
 
         </div>
@@ -69,8 +119,8 @@ export default function DriverDashboard() {
             Route
           </p>
 
-          <h2 className="text-2xl font-bold mt-2">
-            North Campus
+          <h2 className="text-xl font-bold mt-2">
+            {assignedBus?.route || "No Route"}
           </h2>
 
         </div>
@@ -83,8 +133,8 @@ export default function DriverDashboard() {
             Status
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            On Duty
+          <h2 className="text-2xl font-bold mt-2">
+            {driver?.status || "Inactive"}
           </h2>
 
         </div>
@@ -93,11 +143,11 @@ export default function DriverDashboard() {
 
       {/* Middle Section */}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6" >
 
         {/* Today's Journey */}
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8" >
 
           <h2 className="text-2xl font-bold mb-6">
             Today's Journey
@@ -106,51 +156,53 @@ export default function DriverDashboard() {
           <div className="space-y-5">
 
             <div className="flex justify-between">
-
               <span className="text-gray-600">
-                Pickup
+                Departure
               </span>
 
               <span className="font-bold">
-                08:15 AM
+                {schedule?.departure || "--:--"}
               </span>
-
             </div>
 
             <div className="flex justify-between">
-
               <span className="text-gray-600">
                 Arrival
               </span>
 
               <span className="font-bold">
-                09:00 AM
+                {schedule?.arrival || "--:--"}
               </span>
-
             </div>
 
             <div className="flex justify-between">
-
               <span className="text-gray-600">
-                Return
+                Route
               </span>
 
               <span className="font-bold">
-                05:15 PM
+                {assignedBus?.route || "Not Assigned"}
               </span>
-
             </div>
 
             <div className="flex justify-between">
-
               <span className="text-gray-600">
-                Trips Today
+                Pickup Points
+              </span>
+
+              <span className="font-bold text-right max-w-[220px]">
+                {assignedBus?.pickupPoints || "Not Available"}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-gray-600">
+                Bus Status
               </span>
 
               <span className="font-bold text-blue-600">
-                2 Completed
+                {assignedBus?.status || "Inactive"}
               </span>
-
             </div>
 
           </div>
@@ -159,24 +211,24 @@ export default function DriverDashboard() {
 
         {/* Driver Details */}
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8" >
 
           <div className="flex items-center gap-5">
 
             <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center">
 
-              <User size={50} className="text-white"/>
+              <User size={50} className="text-white" />
 
             </div>
 
             <div>
 
               <h2 className="text-2xl font-bold">
-                {user?.name}
+                {driver?.name}
               </h2>
 
               <p className="text-gray-500">
-                Driver • 8 Years Experience
+                Bus Driver
               </p>
 
             </div>
@@ -187,17 +239,35 @@ export default function DriverDashboard() {
 
             <div className="flex items-center gap-3">
 
-              <Phone className="text-green-600"/>
+              <Phone className="text-green-600" />
 
-              +91 {user?.phone}
+              {driver?.phone || "N/A"}
 
             </div>
 
             <div className="flex items-center gap-3">
 
-              <Navigation className="text-blue-600"/>
+              <Mail className="text-blue-600" />
 
-              License Verified
+              {driver?.email || "N/A"}
+
+            </div>
+
+            <div className="flex items-center gap-3">
+
+              <Navigation className="text-purple-600" />
+
+              License No :
+              {driver?.licenseNo || "Not Added"}
+
+            </div>
+
+            <div className="flex items-center gap-3">
+
+              <Bus className="text-orange-500" />
+
+              Assigned Bus :
+              {assignedBus?.busNo || "Not Assigned"}
 
             </div>
 
@@ -209,69 +279,77 @@ export default function DriverDashboard() {
 
       {/* Bottom Cards */}
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6" >
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        {/* Fuel */}
 
-          <Fuel className="text-orange-500"/>
+        <div className="bg-white rounded-3xl shadow-xl p-8" >
+
+          <Fuel className="text-orange-500" />
 
           <h3 className="text-xl font-bold mt-4">
-
             Fuel Level
-
           </h3>
 
           <p className="mt-2 text-gray-500">
-
-            80%
-
+            {assignedBus?.fuel || "80%"}
           </p>
 
           <div className="mt-5 h-3 rounded-full bg-gray-200">
 
-            <div className="h-3 rounded-full bg-orange-500 w-4/5"></div>
+            <div
+              className="h-3 rounded-full bg-orange-500"
+              style={{
+                width: assignedBus?.fuel || "80%",
+              }}
+            ></div>
 
           </div>
 
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        {/* Next Stop */}
 
-          <Clock className="text-blue-600"/>
+        <div className="bg-white rounded-3xl shadow-xl p-8" >
+
+          <Clock className="text-blue-600" />
 
           <h3 className="text-xl font-bold mt-4">
-
             Next Stop
-
           </h3>
 
           <p className="mt-2 text-gray-500">
 
-            City Bus Stand
+            {assignedBus?.pickupPoints
+              ? assignedBus.pickupPoints.split(",")[0]
+              : "Not Available"}
 
           </p>
 
           <p className="mt-4 text-blue-600 font-bold">
-
-            ETA : 8 Minutes
-
+            ETA : 10 Minutes
           </p>
 
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        {/* Distance */}
 
-          <MapPinned className="text-green-600"/>
+        <div className="bg-white rounded-3xl shadow-xl p-8" >
+
+          <MapPinned className="text-green-600" />
 
           <h3 className="text-xl font-bold mt-4">
-
-            Today's Distance
-
+            Pickup Points
           </h3>
 
           <p className="mt-2 text-gray-500">
 
-            28 KM Covered
+            {assignedBus?.pickupPoints
+              ? assignedBus.pickupPoints
+                .split(",")
+                .filter((p) => p.trim() !== "").length
+              : 0}{" "}
+            Stops
 
           </p>
 
@@ -279,7 +357,21 @@ export default function DriverDashboard() {
 
             <div className="h-3 rounded-full bg-gray-200">
 
-              <div className="h-3 rounded-full bg-green-500 w-2/3"></div>
+              <div
+                className="h-3 rounded-full bg-green-500"
+                style={{
+                  width: assignedBus?.pickupPoints
+                    ? `${Math.min(
+                      assignedBus.pickupPoints
+                        .split(",")
+                        .filter((p) => p.trim() !== "").length *
+                      20,
+                      100
+                    )
+                    }%`
+                    : "0%",
+                }}
+              ></div>
 
             </div>
 
@@ -290,5 +382,6 @@ export default function DriverDashboard() {
       </div>
 
     </div>
-  );
+    );
+
 }

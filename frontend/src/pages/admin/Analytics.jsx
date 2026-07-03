@@ -17,13 +17,17 @@ export default function Analytics() {
   const [buses, setBuses] = useState([]);
   const [routes, setRoutes] = useState([]);
   const totalRoutes = [
-  ...new Set(buses.map((b) => b.route))
-].filter(Boolean).length;
+    ...new Set(buses.map((b) => b.route))
+  ].filter(Boolean).length;
 
   useEffect(() => {
 
     const users =
       JSON.parse(localStorage.getItem("users")) || [];
+
+    const studentsData = users.filter(
+      (user) => user.role?.toLowerCase() === "student"
+    );
 
     const driversData =
       JSON.parse(localStorage.getItem("drivers")) || [];
@@ -34,7 +38,7 @@ export default function Analytics() {
     const routesData =
       JSON.parse(localStorage.getItem("routes")) || [];
 
-    setStudents(users);
+    setStudents(studentsData);
 
     setDrivers(driversData);
 

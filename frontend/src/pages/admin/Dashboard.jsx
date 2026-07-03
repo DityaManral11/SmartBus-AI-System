@@ -17,10 +17,20 @@ export default function Dashboard() {
   const [students, setStudents] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [buses, setBuses] = useState([]);
+  const [admin, setAdmin] = useState(null);
 
   useEffect(() => {
-    const studentsData =
+    const users =
       JSON.parse(localStorage.getItem("users")) || [];
+
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || null;
+
+    setAdmin(currentUser);
+
+    const studentsData = users.filter(
+      (user) => user.role?.toLowerCase() === "student"
+    );
 
     const driversData =
       JSON.parse(localStorage.getItem("drivers")) || [];
@@ -37,9 +47,21 @@ export default function Dashboard() {
   return (
     <div>
 
-      <h1 className="text-4xl font-bold mb-8">
-        Admin Dashboard
-      </h1>
+      <div className="mb-8">
+
+        <h1 className="text-4xl font-bold">
+
+          Welcome, {admin?.name || "Admin"} 👋
+
+        </h1>
+
+        <p className="text-gray-500 mt-2">
+
+          Smart Bus Management System Dashboard
+
+        </p>
+
+      </div>
 
       <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
 

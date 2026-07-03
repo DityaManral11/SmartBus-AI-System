@@ -29,7 +29,7 @@ export default function Register() {
   const [licenseNo, setLicenseNo] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [adminKey, setAdminKey] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
 
@@ -47,6 +47,13 @@ export default function Register() {
     if (role === "driver" && !licenseNo) {
       alert("Please enter License Number.");
       return;
+    }
+
+    if (role === "admin") {
+      if (adminKey !== "ONLYADMINS") {
+        alert("Invalid Admin Secret Key!");
+        return;
+      }
     }
 
     if (password !== confirmPassword) {
@@ -70,6 +77,31 @@ export default function Register() {
     users.push(user);
 
     localStorage.setItem("users", JSON.stringify(users));
+
+    if (role === "driver") {
+      const drivers =
+        JSON.parse(localStorage.getItem("drivers")) || [];
+
+      const alreadyExists = drivers.some(
+        (driver) => driver.email === email
+      );
+
+      if (!alreadyExists) {
+        drivers.push({
+          name,
+          email,
+          phone,
+          licenseNo,
+          bus: "",
+          status: "Active",
+        });
+
+        localStorage.setItem(
+          "drivers",
+          JSON.stringify(drivers)
+        );
+      }
+    }
 
     alert("Registration Successful!");
 
@@ -206,6 +238,20 @@ export default function Register() {
                 placeholder="License Number"
                 value={licenseNo}
                 onChange={(e) => setLicenseNo(e.target.value)}
+                className="w-full px-4 py-4 rounded-xl outline-none bg-white"
+              />
+            </div>
+          )}
+
+          {/* For Admin */}
+
+          {role === "admin" && (
+            <div className="mb-4">
+              <input
+                type="password"
+                placeholder="Admin Secret Key"
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
                 className="w-full px-4 py-4 rounded-xl outline-none bg-white"
               />
             </div>

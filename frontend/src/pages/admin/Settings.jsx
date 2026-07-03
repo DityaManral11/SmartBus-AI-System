@@ -6,266 +6,554 @@ import {
     Phone,
     Bell,
     Shield,
-    Moon,
     Save,
+    LogOut,
+    RotateCcw,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
+
 export default function SettingsPage() {
-    return (
-        <div className="space-y-8">
 
-            {/* Header */}
+    const [settings, setSettings] = useState({
 
-            <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
+        schoolName: "ABC Public School",
 
-                <h1 className="text-4xl font-bold flex items-center gap-3">
+        adminName: "Admin",
 
-                    <Settings size={40} />
+        email: "admin@smartbus.com",
 
-                    Settings
+        phone: "+91 9876543210",
 
-                </h1>
+        notifications: true,
 
-                <p className="mt-3 text-blue-100">
+        gps: true,
 
-                    Manage your SmartBus system settings.
+        twoFactor: false,
 
-                </p>
+        password: "",
 
-            </div>
+        confirmPassword: "",
 
-            {/* School Information */}
+    });
 
-            <div className="bg-white rounded-3xl shadow-xl p-8">
+    useEffect(() => {
 
-                <h2 className="text-2xl font-bold mb-6">
+        const savedSettings =
+            JSON.parse(
+                localStorage.getItem("settings")
+            );
 
-                    School Information
+        if (savedSettings) {
 
-                </h2>
+            setSettings(savedSettings);
 
-                <div className="grid md:grid-cols-2 gap-6">
+        } else {
 
-                    <div>
+            const users =
+                JSON.parse(
+                    localStorage.getItem("users")
+                ) || [];
 
-                        <label className="font-semibold mb-2 block">
+            const admin =
+                users.find(
+                    (u) =>
+                        u.role === "admin"
+                );
 
-                            School Name
+            if (admin) {
 
-                        </label>
+                setSettings((prev) => ({
 
-                        <div className="relative">
+                    ...prev,
 
-                            <School className="absolute left-4 top-4 text-gray-400" />
+                    adminName:
+                        admin.name || prev.adminName,
 
-                            <input
-                                type="text"
-                                defaultValue="ABC Public School"
-                                className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
-                            />
+                    email:
+                        admin.email || prev.email,
 
-                        </div>
+                    phone:
+                        admin.phone || prev.phone,
 
-                    </div>
+                }));
 
-                    <div>
+            }
 
-                        <label className="font-semibold mb-2 block">
+        }
 
-                            Admin Name
+    }, []);
 
-                        </label>
+    const handleChange = (e) => {
 
-                        <div className="relative">
+        const { name, value, type, checked } =
+            e.target;
 
-                            <User className="absolute left-4 top-4 text-gray-400" />
+        setSettings((prev) => ({
 
-                            <input
-                                type="text"
-                                defaultValue="Admin"
-                                className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
-                            />
+            ...prev,
 
-                        </div>
+            [name]:
+                type === "checkbox"
+                    ? checked
+                    : value,
 
-                    </div>
+        }));
 
-                    <div>
+    };
 
-                        <label className="font-semibold mb-2 block">
+    const handleSave = () => {
 
-                            Email
+    if (
+        settings.password &&
+        settings.password !== settings.confirmPassword
+    ) {
 
-                        </label>
+        alert("Passwords do not match.");
 
-                        <div className="relative">
+        return;
 
-                            <Mail className="absolute left-4 top-4 text-gray-400" />
+    }
 
-                            <input
-                                type="email"
-                                defaultValue="admin@smartbus.com"
-                                className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
-                            />
+    localStorage.setItem(
+        "settings",
+        JSON.stringify(settings)
+    );
 
-                        </div>
+    if (settings.password) {
 
-                    </div>
+        const users =
+            JSON.parse(
+                localStorage.getItem("users")
+            ) || [];
 
-                    <div>
+        const updatedUsers = users.map((user) => {
 
-                        <label className="font-semibold mb-2 block">
+            if (
+                user.role === "admin"
+            ) {
 
-                            Phone
+                return {
 
-                        </label>
+                    ...user,
 
-                        <div className="relative">
+                    password:
+                        settings.password,
 
-                            <Phone className="absolute left-4 top-4 text-gray-400" />
+                };
 
-                            <input
-                                type="text"
-                                defaultValue="+91 9876543210"
-                                className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
-                            />
+            }
 
-                        </div>
+            return user;
 
-                    </div>
+        });
 
-                </div>
+        localStorage.setItem(
+            "users",
+            JSON.stringify(updatedUsers)
+        );
 
-            </div>
+    }
 
-            {/* System Settings */}
+    alert("Settings saved successfully.");
 
-            <div className="bg-white rounded-3xl shadow-xl p-8">
+};
 
-                <h2 className="text-2xl font-bold mb-6">
+const handleLogout = () => {
 
-                    System Settings
+    if (
+        !window.confirm(
+            "Are you sure you want to logout?"
+        )
+    )
+        return;
 
-                </h2>
+    localStorage.removeItem("currentUser");
 
-                <div className="space-y-5">
+    window.location.href = "/login";
 
-                    <div className="flex justify-between items-center border rounded-2xl p-5">
+};
 
-                        <div className="flex items-center gap-3">
+const handleReset = () => {
 
-                            <Bell className="text-blue-600" />
+    if (
+        !window.confirm(
+            "Reset all settings?"
+        )
+    )
+        return;
 
-                            <span>Notifications</span>
+    const defaultSettings = {
 
-                        </div>
+        schoolName:
+            "ABC Public School",
 
-                        <input type="checkbox" defaultChecked />
+        adminName:
+            "Admin",
 
-                    </div>
+        email:
+            "admin@smartbus.com",
 
-                    
-            
-                    <div className="flex justify-between items-center border rounded-2xl p-5">
+        phone:
+            "+91 9876543210",
 
-                        <div className="flex items-center gap-3">
+        notifications: true,
 
-                            <Shield className="text-green-600" />
+        gps: true,
 
-                            <span>GPS Tracking Enabled</span>
+        twoFactor: false,
 
-                        </div>
+        password: "",
 
-                        <input type="checkbox" defaultChecked />
+        confirmPassword: "",
 
-                    </div>
+    };
 
-                    <div className="flex justify-between items-center border rounded-2xl p-5">
+    setSettings(defaultSettings);
 
-                        <div className="flex items-center gap-3">
+    localStorage.setItem(
+        "settings",
+        JSON.stringify(defaultSettings)
+    );
 
-                            <Shield className="text-red-600" />
+    alert("Settings reset successfully.");
 
-                            <span>Two Factor Authentication</span>
+};
 
-                        </div>
+return (
 
-                        <input type="checkbox" />
+    <div className="space-y-8">
 
-                    </div>
+        {/* Header */}
 
-                </div>
+        <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
 
-            </div>
+            <h1 className="text-4xl font-bold flex items-center gap-3">
 
-            {/* Security */}
+                <Settings size={40} />
 
-            <div className="bg-white rounded-3xl shadow-xl p-8">
+                Settings
 
-                <h2 className="text-2xl font-bold mb-6">
+            </h1>
 
-                    Security
+            <p className="mt-3 text-blue-100">
 
-                </h2>
+                Manage your SmartBus system settings.
 
-                <div className="grid md:grid-cols-2 gap-6">
+            </p>
 
-                    <div>
+        </div>
 
-                        <label className="font-semibold mb-2 block">
+        {/* School Information */}
 
-                            New Password
+        <div className="bg-white rounded-3xl shadow-xl p-8">
 
-                        </label>
+            <h2 className="text-2xl font-bold mb-6">
+
+                School Information
+
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label className="font-semibold mb-2 block">
+
+                        School Name
+
+                    </label>
+
+                    <div className="relative">
+
+                        <School className="absolute left-4 top-4 text-gray-400" />
 
                         <input
-                            type="password"
-                            placeholder="Enter new password"
-                            className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
+                            type="text"
+
+                            name="schoolName"
+
+                            value={settings.schoolName}
+
+                            onChange={handleChange}
+
+                            className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
                         />
 
                     </div>
 
-                    <div>
+                </div>
 
-                        <label className="font-semibold mb-2 block">
+                <div>
 
-                            Confirm Password
+                    <label className="font-semibold mb-2 block">
 
-                        </label>
+                        Admin Name
+
+                    </label>
+
+                    <div className="relative">
+
+                        <User className="absolute left-4 top-4 text-gray-400" />
 
                         <input
-                            type="password"
-                            placeholder="Confirm password"
-                            className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
+                            type="text"
+
+                            name="adminName"
+
+                            value={settings.adminName}
+
+                            onChange={handleChange}
+
+                            className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
                         />
 
                     </div>
 
                 </div>
 
-            </div>
+                <div>
 
-            {/* Action Buttons */}
+                    <label className="font-semibold mb-2 block">
 
-            <div className="flex flex-wrap gap-4">
+                        Email
 
-                <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-8 py-4 rounded-2xl hover:scale-105 transition">
+                    </label>
 
-                    <Save size={20} />
+                    <div className="relative">
 
-                    Save Settings
+                        <Mail className="absolute left-4 top-4 text-gray-400" />
 
-                </button>
+                        <input
 
-                <button className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl transition">
+                            type="email"
 
-                    Logout
+                            name="email"
 
-                </button>
+                            value={settings.email}
+
+                            onChange={handleChange}
+
+                            className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
+                        />
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <label className="font-semibold mb-2 block">
+
+                        Phone
+
+                    </label>
+
+                    <div className="relative">
+
+                        <Phone className="absolute left-4 top-4 text-gray-400" />
+
+                        <input
+
+                            type="text"
+
+                            name="phone"
+
+                            value={settings.phone}
+
+                            onChange={handleChange}
+
+                            className="w-full border rounded-2xl pl-12 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+
+                        />
+
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
-    );
+
+        {/* System Settings */}
+
+        <div className="bg-white rounded-3xl shadow-xl p-8">
+
+            <h2 className="text-2xl font-bold mb-6">
+
+                System Settings
+
+            </h2>
+
+            <div className="space-y-5">
+
+                <div className="flex justify-between items-center border rounded-2xl p-5">
+
+                    <div className="flex items-center gap-3">
+
+                        <Bell className="text-blue-600" />
+
+                        <span>Notifications</span>
+
+                    </div>
+
+                    <input
+
+                        type="checkbox"
+
+                        name="notifications"
+
+                        checked={settings.notifications}
+
+                        onChange={handleChange}
+
+                    />
+
+                </div>
+
+                <div className="flex justify-between items-center border rounded-2xl p-5">
+
+                    <div className="flex items-center gap-3">
+
+                        <Shield className="text-green-600" />
+
+                        <span>GPS Tracking Enabled</span>
+
+                    </div>
+
+                    <input
+
+                        type="checkbox"
+
+                        name="gps"
+
+                        checked={settings.gps}
+
+                        onChange={handleChange}
+
+                    />
+
+                </div>
+
+                <div className="flex justify-between items-center border rounded-2xl p-5">
+
+                    <div className="flex items-center gap-3">
+
+                        <Shield className="text-red-600" />
+
+                        <span>Two Factor Authentication</span>
+
+                    </div>
+
+                    <input
+
+                        type="checkbox"
+
+                        name="twoFactor"
+
+                        checked={settings.twoFactor}
+
+                        onChange={handleChange}
+
+                    />
+
+                </div>
+
+            </div>
+
+        </div>
+
+                {/* Security */}
+
+        <div className="bg-white rounded-3xl shadow-xl p-8">
+
+            <h2 className="text-2xl font-bold mb-6">
+
+                Security
+
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
+
+                <div>
+
+                    <label className="font-semibold mb-2 block">
+
+                        New Password
+
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        value={settings.password}
+                        onChange={handleChange}
+                        placeholder="Enter new password"
+                        className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                    />
+
+                </div>
+
+                <div>
+
+                    <label className="font-semibold mb-2 block">
+
+                        Confirm Password
+
+                    </label>
+
+                    <input
+                        type="password"
+                        name="confirmPassword"
+                        value={settings.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                    />
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {/* Action Buttons */}
+
+        <div className="flex flex-wrap gap-4">
+
+            <button
+                onClick={handleSave}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-8 py-4 rounded-2xl hover:scale-105 transition"
+            >
+
+                <Save size={20} />
+
+                Save Settings
+
+            </button>
+
+            <button
+                onClick={handleReset}
+                className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-4 rounded-2xl transition"
+            >
+
+                <RotateCcw size={20} />
+
+                Reset
+
+            </button>
+
+            
+
+        </div>
+
+    </div>
+
+);
+
 }

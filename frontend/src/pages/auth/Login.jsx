@@ -139,8 +139,20 @@ export default function Login() {
                 alert("Invalid Email or Password");
                 return;
               }
+              console.log("Logged User:", loggedUser);
 
               localStorage.setItem("user", JSON.stringify(loggedUser));
+
+              localStorage.setItem(
+                "currentUser",
+                JSON.stringify(loggedUser)
+              );
+
+              console.log(
+                "Current User:",
+                localStorage.getItem("currentUser")
+              );
+
               localStorage.setItem("isLoggedIn", "true");
               localStorage.setItem("userRole", role);
 
