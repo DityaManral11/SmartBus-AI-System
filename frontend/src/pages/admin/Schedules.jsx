@@ -2,7 +2,7 @@ import { CalendarDays, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import ScheduleTable from "../../components/ScheduleTable";
-import AddScheduleModal from "../../components/AddSCheduleModal";
+import AddScheduleModal from "../../components/AddScheduleModal";
 
 export default function Schedules() {
 
