@@ -47,14 +47,14 @@ export default function DriverDashboard() {
     if (foundDriver) {
       // Assigned Bus
       const bus = buses.find(
-        (b) => b.busNo === foundDriver.bus
+        (b) => b.driver === foundDriver.email
       );
 
       setAssignedBus(bus);
 
       // Schedule
       const driverSchedule = schedules.find(
-        (s) => s.busNo === foundDriver.bus
+        (s) => s.busNo === bus?.busNo
       );
 
       setSchedule(driverSchedule);
@@ -382,6 +382,6 @@ export default function DriverDashboard() {
       </div>
 
     </div>
-    );
+  );
 
 }

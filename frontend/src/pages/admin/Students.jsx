@@ -140,6 +140,7 @@ export default function Students() {
         id: Date.now(),
         ...newStudent,
         role: "student",
+        status: "Present",
       });
 
       localStorage.setItem("users", JSON.stringify(users));

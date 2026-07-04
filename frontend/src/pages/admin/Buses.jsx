@@ -18,10 +18,14 @@ export default function Buses() {
 
     setBuses(savedBuses);
 
-    const savedDrivers =
-      JSON.parse(localStorage.getItem("drivers")) || [];
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
 
-    setDrivers(savedDrivers);
+    const driversData = users.filter(
+      (user) => user.role?.toLowerCase() === "driver"
+    );
+
+    setDrivers(driversData);
   }, []);
 
   const filteredBuses = buses.filter((bus) => {
@@ -160,6 +164,7 @@ export default function Buses() {
         setBuses={setBuses}
         setOpen={setOpen}
         setEditBus={setEditBus}
+        drivers={drivers}
       />
 
       {/* Add/Edit Modal */}

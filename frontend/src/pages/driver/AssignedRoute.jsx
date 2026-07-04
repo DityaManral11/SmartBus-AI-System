@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Bus,
   MapPinned,
@@ -7,7 +9,48 @@ import {
   Route,
 } from "lucide-react";
 
+
 export default function AssignedRoute() {
+
+  const [driver, setDriver] = useState(null);
+  const [assignedBus, setAssignedBus] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || null;
+
+    if (!currentUser) return;
+
+    const drivers =
+      JSON.parse(localStorage.getItem("drivers")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    const foundDriver = drivers.find(
+      (d) => d.email === currentUser.email
+    );
+
+    setDriver(foundDriver || currentUser);
+
+    if (foundDriver) {
+      const bus = buses.find(
+        (b) => b.driver === currentUser.email
+      );
+
+      setAssignedBus(bus);
+
+      const routeSchedule = schedules.find(
+        (s) => s.busNo === bus?.busNo
+      );
+
+      setSchedule(routeSchedule);
+    }
+  }, []);
   return (
     <div className="space-y-8">
 
@@ -37,7 +80,7 @@ export default function AssignedRoute() {
           <p className="mt-4">Bus Number</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            BUS-07
+            {assignedBus?.busNo || "Not Assigned"}
           </h2>
 
         </div>
@@ -49,7 +92,7 @@ export default function AssignedRoute() {
           <p className="mt-4">Route</p>
 
           <h2 className="text-2xl font-bold mt-2">
-            North Campus
+            {assignedBus?.route || "Not Assigned"}
           </h2>
 
         </div>
@@ -61,7 +104,7 @@ export default function AssignedRoute() {
           <p className="mt-4">Pickup</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            08:15 AM
+            {schedule?.departure || "--:--"}
           </h2>
 
         </div>
@@ -73,7 +116,7 @@ export default function AssignedRoute() {
           <p className="mt-4">Status</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            Running
+            {assignedBus?.status || "Inactive"}
           </h2>
 
         </div>
@@ -88,65 +131,34 @@ export default function AssignedRoute() {
           Today's Route
         </h2>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
 
-          <div className="flex items-center gap-5">
+          {assignedBus?.pickupPoints
+            ?.split(",")
+            .map((point, index, arr) => (
+              <div key={index}>
 
-            <div className="w-5 h-5 rounded-full bg-green-500"></div>
+                <div className="flex items-center gap-5">
 
-            <span className="text-lg">
-              Depot
-            </span>
+                  <div
+                    className={`w-5 h-5 rounded-full ${index === 0
+                      ? "bg-blue-600"
+                      : "bg-green-500"
+                      }`}
+                  ></div>
 
-          </div>
+                  <span className="text-lg">
+                    {point.trim()}
+                  </span>
 
-          <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
+                </div>
 
-          <div className="flex items-center gap-5">
+                {index !== arr.length - 1 && (
+                  <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
+                )}
 
-            <div className="w-5 h-5 rounded-full bg-green-500"></div>
-
-            <span className="text-lg">
-              City Mall
-            </span>
-
-          </div>
-
-          <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
-
-          <div className="flex items-center gap-5">
-
-            <div className="w-5 h-5 rounded-full bg-blue-600 animate-pulse"></div>
-
-            <span className="text-lg font-semibold">
-              Bus Stand (Current)
-            </span>
-
-          </div>
-
-          <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
-
-          <div className="flex items-center gap-5">
-
-            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-
-            <span className="text-lg">
-              University Gate
-            </span>
-
-          </div>
-
-          <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
-
-          <div className="flex items-center gap-5">
-
-            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-
-            <span className="text-lg">
-              Engineering Block
-            </span>
-
-          </div>
+              </div>
+            ))}
 
         </div>
 
@@ -158,42 +170,42 @@ export default function AssignedRoute() {
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
-          <Clock className="text-blue-600"/>
+          <Clock className="text-blue-600" />
 
           <h3 className="text-xl font-bold mt-4">
             Pickup
           </h3>
 
           <p className="mt-2 text-gray-500">
-            08:15 AM
+            {schedule?.departure || "--:--"}
           </p>
 
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
-          <Navigation className="text-green-600"/>
+          <Navigation className="text-green-600" />
 
           <h3 className="text-xl font-bold mt-4">
             Arrival
           </h3>
 
           <p className="mt-2 text-gray-500">
-            09:00 AM
+            {schedule?.arrival || "--:--"}
           </p>
 
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
 
-          <Bus className="text-orange-500"/>
+          <Bus className="text-orange-500" />
 
           <h3 className="text-xl font-bold mt-4">
             Return
           </h3>
 
           <p className="mt-2 text-gray-500">
-            05:15 PM
+            {schedule?.return || "--:--"}
           </p>
 
         </div>

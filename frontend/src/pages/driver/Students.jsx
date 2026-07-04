@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Users,
   Search,
@@ -10,55 +10,79 @@ import {
 
 export default function Students() {
   const [search, setSearch] = useState("");
+  const [students, setStudents] = useState([]);
+  const [assignedBus, setAssignedBus] = useState(null);
 
-  const students = [
-    {
-      id: 1,
-      name: "Aman Kumar",
-      roll: "22CSE101",
-      pickup: "City Mall",
-      phone: "+91 9876543210",
-      status: "Present",
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      roll: "22CSE102",
-      pickup: "Bus Stand",
-      phone: "+91 9876543211",
-      status: "Present",
-    },
-    {
-      id: 3,
-      name: "Rahul Verma",
-      roll: "22CSE103",
-      pickup: "University Gate",
-      phone: "+91 9876543212",
-      status: "Absent",
-    },
-    {
-      id: 4,
-      name: "Sneha Kumari",
-      roll: "22CSE104",
-      pickup: "Engineering Block",
-      phone: "+91 9876543213",
-      status: "Present",
-    },
-    {
-      id: 5,
-      name: "Aditya Raj",
-      roll: "22CSE105",
-      pickup: "North Campus",
-      phone: "+91 9876543214",
-      status: "Present",
-    },
-  ];
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || null;
+
+    console.log("Current User:", currentUser);
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    console.log("All Buses:", buses);
+
+    const assignedBus = buses.find(
+      (b) => b.driver === currentUser.email
+    );
+
+    setAssignedBus(assignedBus);
+
+    console.log("Assigned Bus:", assignedBus);
+
+    if (!assignedBus) {
+      setStudents([]);
+      return;
+    }
+
+    const busStudents = users.filter(
+      (u) =>
+        u.role === "student" &&
+        u.bus === assignedBus.busNo
+    );
+
+    console.log("Bus Students:", busStudents);
+
+    setStudents(busStudents);
+  }, []);
+
+  const toggleAttendance = (email) => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const updatedUsers = users.map((user) => {
+      if (user.email === email) {
+        return {
+          ...user,
+          status: user.status === "Present" ? "Absent" : "Present",
+        };
+      }
+      return user;
+    });
+
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+    setStudents(
+      updatedUsers.filter(
+        (u) =>
+          u.role === "student" &&
+          u.bus === assignedBus.busNo
+      )
+    );
+  };
 
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(search.toLowerCase()) ||
-      student.roll.toLowerCase().includes(search.toLowerCase())
+      student.rollNo.toLowerCase().includes(search.toLowerCase())
   );
+
+  console.log("Students State:", students);
 
   return (
     <div className="space-y-8">
@@ -129,24 +153,32 @@ export default function Students() {
                   </h2>
 
                   <p className="text-gray-500">
-                    {student.roll}
+                    {student.rollNo}
                   </p>
 
                 </div>
 
               </div>
 
-              {student.status === "Present" ? (
-                <span className="flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-                  <CheckCircle size={16} />
-                  Present
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
-                  <XCircle size={16} />
-                  Absent
-                </span>
-              )}
+              <button
+                onClick={() => toggleAttendance(student.email)}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold transition ${student.status === "Present"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                  }`}
+              >
+                {student.status === "Present" ? (
+                  <>
+                    <CheckCircle size={16} />
+                    Present
+                  </>
+                ) : (
+                  <>
+                    <XCircle size={16} />
+                    Absent
+                  </>
+                )}
+              </button>
 
             </div>
 

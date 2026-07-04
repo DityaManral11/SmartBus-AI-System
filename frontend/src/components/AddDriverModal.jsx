@@ -13,7 +13,7 @@ export default function AddDriverModal({
     name: "",
     phone: "",
     email: "",
-    status: "Active",
+    status: "",
   });
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function AddDriverModal({
         name: "",
         phone: "",
         email: "",
-        status: "Active",
+        status: "",
       });
     }
   }, [editDriver, open]);
@@ -41,6 +41,9 @@ export default function AddDriverModal({
     }
 
     let updatedDrivers;
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
 
     if (editDriver) {
       updatedDrivers = drivers.map((d) =>
@@ -67,12 +70,50 @@ export default function AddDriverModal({
       JSON.stringify(updatedDrivers)
     );
 
+    // ----------------------
+    // Users ko bhi update karo
+    // ----------------------
+
+    let updatedUsers = [...users];
+
+    if (editDriver) {
+      updatedUsers = users.map((u) =>
+        u.email === editDriver.email
+          ? {
+            ...u,
+            name: driver.name,
+            phone: driver.phone,
+            email: driver.email,
+            status: driver.status,
+          }
+          : u
+      );
+    } else {
+      const alreadyExists = users.some(
+        (u) => u.email === driver.email
+      );
+
+      if (!alreadyExists) {
+        updatedUsers.push({
+          ...driver,
+          password: "123456",
+          role: "driver",
+          licenseNo: "",
+        });
+      }
+    }
+
+    localStorage.setItem(
+      "users",
+      JSON.stringify(updatedUsers)
+    );
+
     setDriver({
       name: "",
       phone: "",
       email: "",
       bus: "",
-      status: "Active",
+      status: "",
     });
 
     setEditDriver(null);
@@ -141,9 +182,10 @@ export default function AddDriverModal({
             }
             className="w-full border rounded-xl p-3"
           >
-            <option>Active</option>
-            <option>On Leave</option>
-            <option>Inactive</option>
+            <option value="">Select Status</option>
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Inactive">Inactive</option>
           </select>
 
         </div>

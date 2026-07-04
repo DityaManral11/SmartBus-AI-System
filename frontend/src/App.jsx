@@ -29,6 +29,7 @@ import Reports from "./pages/admin/Reports";
 import Settings from "./pages/admin/Settings";
 import AdminLiveTracking from "./pages/admin/LiveTracking";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DriverStudents from "./pages/driver/Students";
 
 
 function App() {
@@ -67,7 +68,7 @@ function App() {
         >
           <Route path="dashboard" element={<DriverDashboard />} />
           <Route path="route" element={<AssignedRoute />} />
-          <Route path="students" element={<Students />} />
+          <Route path="students" element={<DriverStudents />} />
           <Route path="live" element={<DriverLiveLocation />} />
           <Route path="profile" element={<DriverProfile />} />
           <Route path="settings" element={<DriverSettings />} />

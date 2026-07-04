@@ -4,11 +4,14 @@ export default function BusTable({
   buses,
   setBuses,
   setOpen,
+  drivers,
   setEditBus,
 }) {
+
   const handleDelete = (busNo) => {
     if (!window.confirm("Delete this bus?")) return;
 
+    // Delete Bus
     const updatedBuses = buses.filter(
       (bus) => bus.busNo !== busNo
     );
@@ -18,6 +21,24 @@ export default function BusTable({
     localStorage.setItem(
       "buses",
       JSON.stringify(updatedBuses)
+    );
+
+    // Remove Bus from Driver
+    const drivers =
+      JSON.parse(localStorage.getItem("drivers")) || [];
+
+    const updatedDrivers = drivers.map((driver) =>
+      driver.bus === busNo
+        ? {
+          ...driver,
+          bus: "",
+        }
+        : driver
+    );
+
+    localStorage.setItem(
+      "drivers",
+      JSON.stringify(updatedDrivers)
     );
   };
 
@@ -46,7 +67,7 @@ export default function BusTable({
               </td>
 
               <td className="p-4">
-                {bus.driver}
+                {drivers.find((d) => d.email === bus.driver)?.name || "Not Assigned"}
               </td>
 
               <td className="p-4">
@@ -54,10 +75,10 @@ export default function BusTable({
               </td>
 
               <td className="p-4">
-  <div className="max-w-[250px] truncate" title={bus.pickupPoints}>
-    {bus.pickupPoints}
-  </div>
-</td>
+                <div className="max-w-[250px] truncate" title={bus.pickupPoints}>
+                  {bus.pickupPoints}
+                </div>
+              </td>
 
               <td className="p-4 text-center">
                 <span

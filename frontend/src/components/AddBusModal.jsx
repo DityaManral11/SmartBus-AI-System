@@ -68,6 +68,20 @@ export default function AddBusModal({
       JSON.stringify(updatedBuses)
     );
 
+    const updatedDrivers = drivers.map((d) =>
+      d.email === bus.driver
+        ? {
+          ...d,
+          bus: bus.busNo,
+        }
+        : d
+    );
+
+    localStorage.setItem(
+      "drivers",
+      JSON.stringify(updatedDrivers)
+    );
+
     setBus(emptyBus);
     setEditBus(null);
     setOpen(false);
@@ -118,7 +132,7 @@ export default function AddBusModal({
             <option value="">Select Driver</option>
 
             {drivers.map((driver) => (
-              <option key={driver.email} value={driver.name}>
+              <option key={driver.email} value={driver.email}>
                 {driver.name}
               </option>
             ))}
