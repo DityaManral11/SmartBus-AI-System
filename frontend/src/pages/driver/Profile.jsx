@@ -9,9 +9,34 @@ import {
   Clock,
   Navigation,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function DriverProfile() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [driver, setDriver] = useState(null);
+  const [bus, setBus] = useState(null);
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const driverData = users.find(
+      (u) => u.email === currentUser.email
+    );
+
+    setDriver(driverData);
+
+    const assignedBus = buses.find(
+      (b) => b.driver === currentUser.email
+    );
+
+    setBus(assignedBus);
+  }, []);
   return (
     <div className="space-y-8">
 
@@ -38,14 +63,14 @@ export default function DriverProfile() {
 
           <div className="w-40 h-40 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center border-4 border-cyan-300 shadow-lg">
 
-            <User size={70} className="text-white"/>
+            <User size={70} className="text-white" />
 
           </div>
 
           <div className="flex-1">
 
             <h2 className="text-3xl font-bold">
-              {user?.name}
+              {driver?.name || "N/A"}
             </h2>
 
             <p className="text-gray-500 mt-2">
@@ -55,22 +80,22 @@ export default function DriverProfile() {
             <div className="grid md:grid-cols-2 gap-5 mt-8">
 
               <div className="flex items-center gap-3">
-                <Phone className="text-green-600"/>
-                +91 {user?.phone}
+                <Phone className="text-green-600" />
+                +91 {driver?.phone || "N/A"}
               </div>
 
               <div className="flex items-center gap-3">
-                <Mail className="text-blue-600"/>
-                {user?.email}
+                <Mail className="text-blue-600" />
+                {driver?.email || "N/A"}
               </div>
 
               <div className="flex items-center gap-3">
-                <BadgeCheck className="text-purple-600"/>
-                {user?.licenseNo}
+                <BadgeCheck className="text-purple-600" />
+                {driver?.licenseNo || "N/A"}
               </div>
 
               <div className="flex items-center gap-3">
-                <Award className="text-orange-500"/>
+                <Award className="text-orange-500" />
                 Experience : 8 Years
               </div>
 
@@ -88,19 +113,19 @@ export default function DriverProfile() {
 
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Bus size={35}/>
+          <Bus size={35} />
 
           <p className="mt-4">Assigned Bus</p>
 
           <h2 className="text-3xl font-bold mt-2">
-            BUS-07
+            {bus?.busNo || "Not Assigned"}
           </h2>
 
         </div>
 
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Navigation size={35}/>
+          <Navigation size={35} />
 
           <p className="mt-4">Trips</p>
 
@@ -112,7 +137,7 @@ export default function DriverProfile() {
 
         <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Clock size={35}/>
+          <Clock size={35} />
 
           <p className="mt-4">Distance</p>
 
@@ -124,7 +149,7 @@ export default function DriverProfile() {
 
         <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-3xl p-6 text-white shadow-xl">
 
-          <Award size={35}/>
+          <Award size={35} />
 
           <p className="mt-4">Rating</p>
 
@@ -148,33 +173,33 @@ export default function DriverProfile() {
 
           <div className="flex items-center gap-3">
 
-            <Bus className="text-blue-600"/>
+            <Bus className="text-blue-600" />
 
-            <span>Bus Number : BUS-07</span>
-
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <MapPinned className="text-green-600"/>
-
-            <span>Route : North Campus</span>
+            <span>Bus Number : {bus?.busNo || "Not Assigned"}</span>
 
           </div>
 
           <div className="flex items-center gap-3">
 
-            <Clock className="text-orange-500"/>
+            <MapPinned className="text-green-600" />
 
-            <span>Pickup : 08:15 AM</span>
+            <span>Route : {bus?.route || "N/A"}</span>
 
           </div>
 
           <div className="flex items-center gap-3">
 
-            <BadgeCheck className="text-purple-600"/>
+            <Clock className="text-orange-500" />
 
-            <span>Status : Active</span>
+            <span>Pickup : {bus?.pickupPoints || "N/A"}</span>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <BadgeCheck className="text-purple-600" />
+
+            <span>Status : {bus?.status || "Inactive"}</span>
 
           </div>
 

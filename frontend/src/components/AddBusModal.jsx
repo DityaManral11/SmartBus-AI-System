@@ -14,6 +14,7 @@ export default function AddBusModal({
     driver: "",
     route: "",
     pickupPoints: "",
+    capacity: "",
     status: "Running",
   };
 
@@ -32,7 +33,8 @@ export default function AddBusModal({
       !bus.busNo.trim() ||
       !bus.driver.trim() ||
       !bus.route.trim() ||
-      !bus.pickupPoints.trim()
+      !bus.pickupPoints.trim() ||
+      !bus.capacity
     ) {
       alert("Please fill all fields.");
       return;
@@ -146,6 +148,19 @@ export default function AddBusModal({
               setBus({
                 ...bus,
                 route: e.target.value,
+              })
+            }
+            className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <input
+            type="number"
+            placeholder="Bus Capacity"
+            value={bus.capacity}
+            onChange={(e) =>
+              setBus({
+                ...bus,
+                capacity: e.target.value,
               })
             }
             className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"

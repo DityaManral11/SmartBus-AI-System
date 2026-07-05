@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Settings,
   Bell,
@@ -9,11 +8,43 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function DriverSettings() {
+
+  const navigate = useNavigate();
+
   const [notifications, setNotifications] = useState(true);
   const [location, setLocation] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+
+  const currentUser =
+    JSON.parse(localStorage.getItem("currentUser")) || {};
+
+  useEffect(() => {
+    const settings =
+      JSON.parse(localStorage.getItem("driverSettings")) || {};
+
+    if (settings[currentUser.email]) {
+      setNotifications(settings[currentUser.email].notifications);
+      setLocation(settings[currentUser.email].location);
+    }
+  }, []);
+
+  const saveSettings = (newNotification, newLocation) => {
+    const settings =
+      JSON.parse(localStorage.getItem("driverSettings")) || {};
+
+    settings[currentUser.email] = {
+      notifications: newNotification,
+      location: newLocation,
+    };
+
+    localStorage.setItem(
+      "driverSettings",
+      JSON.stringify(settings)
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -56,7 +87,7 @@ export default function DriverSettings() {
 
             <div className="flex items-center gap-4">
 
-              <Bell className="text-blue-600"/>
+              <Bell className="text-blue-600" />
 
               <div>
 
@@ -74,14 +105,12 @@ export default function DriverSettings() {
 
             <button
               onClick={() => setNotifications(!notifications)}
-              className={`w-14 h-8 rounded-full transition ${
-                notifications ? "bg-green-500" : "bg-gray-300"
-              }`}
+              className={`w-14 h-8 rounded-full transition ${notifications ? "bg-green-500" : "bg-gray-300"
+                }`}
             >
               <div
-                className={`w-6 h-6 bg-white rounded-full mt-1 transition ${
-                  notifications ? "ml-7" : "ml-1"
-                }`}
+                className={`w-6 h-6 bg-white rounded-full mt-1 transition ${notifications ? "ml-7" : "ml-1"
+                  }`}
               />
             </button>
 
@@ -93,7 +122,7 @@ export default function DriverSettings() {
 
             <div className="flex items-center gap-4">
 
-              <MapPinned className="text-red-500"/>
+              <MapPinned className="text-red-500" />
 
               <div>
 
@@ -111,14 +140,12 @@ export default function DriverSettings() {
 
             <button
               onClick={() => setLocation(!location)}
-              className={`w-14 h-8 rounded-full transition ${
-                location ? "bg-green-500" : "bg-gray-300"
-              }`}
+              className={`w-14 h-8 rounded-full transition ${location ? "bg-green-500" : "bg-gray-300"
+                }`}
             >
               <div
-                className={`w-6 h-6 bg-white rounded-full mt-1 transition ${
-                  location ? "ml-7" : "ml-1"
-                }`}
+                className={`w-6 h-6 bg-white rounded-full mt-1 transition ${location ? "ml-7" : "ml-1"
+                  }`}
               />
             </button>
 
@@ -146,27 +173,30 @@ export default function DriverSettings() {
 
             <div className="flex items-center gap-3">
 
-              <Globe className="text-cyan-600"/>
+              <Globe className="text-cyan-600" />
 
               Language
 
             </div>
 
-            <ChevronRight/>
+            <ChevronRight />
 
           </button>
 
-          <button className="w-full flex justify-between items-center p-4 rounded-2xl hover:bg-slate-100 transition">
+          <button
+            onClick={() => alert("Feature Coming Soon")}
+            className="w-full flex justify-between items-center p-4 rounded-2xl hover:bg-slate-100 transition"
+          >
 
             <div className="flex items-center gap-3">
 
-              <Lock className="text-orange-500"/>
+              <Lock className="text-orange-500" />
 
               Change Password
 
             </div>
 
-            <ChevronRight/>
+            <ChevronRight />
 
           </button>
 
@@ -174,19 +204,7 @@ export default function DriverSettings() {
 
       </div>
 
-      {/* Logout */}
 
-      <button className="w-full py-5 rounded-3xl bg-gradient-to-r from-red-500 to-pink-600 text-white text-lg font-bold shadow-xl hover:scale-[1.02] transition">
-
-        <div className="flex justify-center items-center gap-3">
-
-          <LogOut/>
-
-          Logout
-
-        </div>
-
-      </button>
 
       <div className="text-center text-gray-500 text-sm">
 

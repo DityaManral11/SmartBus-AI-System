@@ -162,12 +162,7 @@ export default function Students() {
 
     setShowForm(false);
     setEditEmail(null);
-
-
-
   };
-
-
 
   const filteredStudents = students.filter(
     (student) =>

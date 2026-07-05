@@ -18,16 +18,18 @@ import {
 } from "lucide-react";
 
 import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
 
 const busPosition = [28.6139, 77.2090];
 
 const route = [
-    [28.6125, 77.2055],
-    [28.6132, 77.2070],
-    [28.6139, 77.2090],
-    [28.6150, 77.2110],
-    [28.6170, 77.2140],
+  [28.6125, 77.2055],
+  [28.6132, 77.2070],
+  [28.6139, 77.2090],
+  [28.6150, 77.2110],
+  [28.6170, 77.2140],
 ];
+
 
 const busIcon = new L.Icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
@@ -42,6 +44,67 @@ const stopIcon = new L.Icon({
 });
 
 export default function LiveLocation() {
+    const [bus, setBus] = useState(null);
+    const [driver, setDriver] = useState(null);
+    const [loading, setLoading] = useState(false);
+    useEffect(() => {
+        const currentUser =
+            JSON.parse(localStorage.getItem("currentUser")) || {};
+
+        const buses =
+            JSON.parse(localStorage.getItem("buses")) || [];
+
+        const users =
+            JSON.parse(localStorage.getItem("users")) || [];
+
+        const assignedBus = buses.find(
+            (b) => b.driver === currentUser.email
+        );
+
+        setBus(assignedBus);
+
+        const driverData = users.find(
+            (u) => u.email === currentUser.email
+        );
+
+        setDriver(driverData);
+    }, []);
+
+    const loadData = () => {
+        setLoading(true);
+
+        const currentUser =
+            JSON.parse(localStorage.getItem("currentUser")) || {};
+
+        const buses =
+            JSON.parse(localStorage.getItem("buses")) || [];
+
+        const users =
+            JSON.parse(localStorage.getItem("users")) || [];
+
+        const assignedBus = buses.find(
+            (b) => b.driver === currentUser.email
+        );
+
+        setBus(assignedBus);
+
+        const driverData = users.find(
+            (u) => u.email === currentUser.email
+        );
+
+        setDriver(driverData);
+
+        setTimeout(() => {
+            setLoading(false);
+        }, 500);
+    };
+
+    const pickupPoints =
+        bus?.pickupPoints
+            ?.split(",")
+            .map((point) => point.trim()) || [];
+
+
     return (
         <div className="space-y-8">
 
@@ -78,7 +141,7 @@ export default function LiveLocation() {
                     </p>
 
                     <h2 className="text-3xl font-bold mt-2">
-                        42 km/h
+                        {bus?.speed || "40 km/h"}
                     </h2>
 
                 </div>
@@ -92,7 +155,15 @@ export default function LiveLocation() {
                     </p>
 
                     <h2 className="text-3xl font-bold mt-2">
-                        38
+                        {
+                            JSON.parse(localStorage.getItem("users") || "[]")
+                                .filter(
+                                    s =>
+                                        s.role === "student" &&
+                                        s.bus === bus?.busNo &&
+                                        s.status === "Present"
+                                ).length
+                        }
                     </h2>
 
                 </div>
@@ -106,7 +177,7 @@ export default function LiveLocation() {
                     </p>
 
                     <h2 className="text-3xl font-bold mt-2">
-                        8 Min
+                        {bus?.eta || "8 Min"}
                     </h2>
 
                 </div>
@@ -120,7 +191,7 @@ export default function LiveLocation() {
                     </p>
 
                     <h2 className="text-3xl font-bold mt-2">
-                        Running
+                        {bus?.status || "Running"}
                     </h2>
 
                 </div>
@@ -137,9 +208,15 @@ export default function LiveLocation() {
                         Live Map
                     </h2>
 
-                    <button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-3 rounded-xl hover:scale-105 transition">
+                    <button
+                        onClick={loadData}
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-3 rounded-xl hover:scale-105 transition"
+                    >
 
-                        <RotateCw size={18} />
+                        <RotateCw
+                            size={18}
+                            className={loading ? "animate-spin" : ""}
+                        />
 
                         Refresh
 
@@ -165,9 +242,17 @@ export default function LiveLocation() {
                         <Marker position={busPosition} icon={busIcon}>
                             <Popup>
                                 <div className="text-center">
-                                    <h3 className="font-bold">BUS-07</h3>
-                                    <p>Current Speed : 42 km/h</p>
-                                    <p>Status : Running</p>
+                                    <h3 className="font-bold">
+                                        {bus?.busNo || "N/A"}
+                                    </h3>
+
+                                    <p>
+                                        Current Speed : {bus?.speed || "40 km/h"}
+                                    </p>
+
+                                    <p>
+                                        Status : {bus?.status || "Running"}
+                                    </p>
                                 </div>
                             </Popup>
                         </Marker>
@@ -179,7 +264,7 @@ export default function LiveLocation() {
                             icon={stopIcon}
                         >
                             <Popup>
-                                Depot
+                                {pickupPoints[0]}
                             </Popup>
                         </Marker>
 
@@ -190,7 +275,7 @@ export default function LiveLocation() {
                             icon={stopIcon}
                         >
                             <Popup>
-                                Engineering Block
+                                {pickupPoints[pickupPoints.length - 1]}
                             </Popup>
                         </Marker>
 
@@ -219,66 +304,56 @@ export default function LiveLocation() {
                 <div className="bg-white rounded-3xl shadow-xl p-8">
 
                     <h2 className="text-2xl font-bold mb-8">
-
                         Route Progress
-
                     </h2>
 
-                    <div className="space-y-7">
+                    <div className="space-y-6">
 
-                        <div className="flex items-center gap-4">
+                        {pickupPoints.length > 0 ? (
+                            pickupPoints.map((point, index) => (
 
-                            <div className="w-5 h-5 rounded-full bg-green-500"></div>
+                                <div key={index}>
 
-                            <span>Depot</span>
+                                    <div className="flex items-center gap-4">
 
-                        </div>
+                                        <div
+                                            className={`w-5 h-5 rounded-full ${index === 0
+                                                ? "bg-blue-600 animate-pulse"
+                                                : "bg-green-500"
+                                                }`}
+                                        ></div>
 
-                        <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
+                                        <span
+                                            className={index === 0 ? "font-bold" : ""}
+                                        >
+                                            {point}
 
-                        <div className="flex items-center gap-4">
+                                            {index === 0 && " (Current)"}
+                                        </span>
 
-                            <div className="w-5 h-5 rounded-full bg-green-500"></div>
+                                    </div>
 
-                            <span>City Mall</span>
+                                    {index !== pickupPoints.length - 1 && (
+                                        <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
+                                    )}
 
-                        </div>
+                                </div>
 
-                        <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
+                            ))
+                        ) : (
 
-                        <div className="flex items-center gap-4">
+                            <p className="text-gray-500">
+                                No Pickup Points Available
+                            </p>
 
-                            <div className="w-5 h-5 rounded-full bg-blue-600 animate-pulse"></div>
-
-                            <span className="font-bold">
-                                Bus Stand (Current)
-                            </span>
-
-                        </div>
-
-                        <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
-
-                        <div className="flex items-center gap-4">
-
-                            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-
-                            <span>University Gate</span>
-
-                        </div>
-
-                        <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
-
-                        <div className="flex items-center gap-4">
-
-                            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-
-                            <span>Engineering Block</span>
-
-                        </div>
+                        )}
 
                     </div>
 
                 </div>
+
+
+
 
                 {/* Trip Info */}
 
@@ -302,7 +377,7 @@ export default function LiveLocation() {
 
                             <span className="font-bold">
 
-                                BUS-07
+                                {bus?.busNo}
 
                             </span>
 
@@ -318,7 +393,7 @@ export default function LiveLocation() {
 
                             <span className="font-bold">
 
-                                Rahul Sharma
+                                {driver?.name || "N/A"}
 
                             </span>
 
@@ -334,7 +409,7 @@ export default function LiveLocation() {
 
                             <span className="font-bold">
 
-                                North Campus
+                                {bus?.route || "N/A"}
 
                             </span>
 
@@ -350,7 +425,7 @@ export default function LiveLocation() {
 
                             <span className="font-bold text-blue-600">
 
-                                8 Minutes
+                                {bus?.eta || "8 Minutes"}
 
                             </span>
 
@@ -366,7 +441,7 @@ export default function LiveLocation() {
 
                             <span className="font-bold text-green-600">
 
-                                Running
+                                {bus?.status || "Running"}
 
                             </span>
 
