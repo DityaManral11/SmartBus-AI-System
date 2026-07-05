@@ -29,7 +29,7 @@ export default function DriverSettings() {
       setNotifications(settings[currentUser.email].notifications);
       setLocation(settings[currentUser.email].location);
     }
-  }, []);
+  }, [currentUser.email]);
 
   const saveSettings = (newNotification, newLocation) => {
     const settings =
@@ -104,7 +104,11 @@ export default function DriverSettings() {
             </div>
 
             <button
-              onClick={() => setNotifications(!notifications)}
+              onClick={() => {
+                const newValue = !notifications;
+                setNotifications(newValue);
+                saveSettings(newValue, location);
+              }}
               className={`w-14 h-8 rounded-full transition ${notifications ? "bg-green-500" : "bg-gray-300"
                 }`}
             >
@@ -139,7 +143,11 @@ export default function DriverSettings() {
             </div>
 
             <button
-              onClick={() => setLocation(!location)}
+              onClick={() => {
+                const newValue = !location;
+                setLocation(newValue);
+                saveSettings(notifications, newValue);
+              }}
               className={`w-14 h-8 rounded-full transition ${location ? "bg-green-500" : "bg-gray-300"
                 }`}
             >
@@ -169,18 +177,16 @@ export default function DriverSettings() {
 
         <div className="space-y-4">
 
-          <button className="w-full flex justify-between items-center p-4 rounded-2xl hover:bg-slate-100 transition">
-
+          <button
+            onClick={() => alert("Feature Coming Soon")}
+            className="w-full flex justify-between items-center p-4 rounded-2xl hover:bg-slate-100 transition"
+          >
             <div className="flex items-center gap-3">
-
               <Globe className="text-cyan-600" />
-
               Language
-
             </div>
 
             <ChevronRight />
-
           </button>
 
           <button
