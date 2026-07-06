@@ -142,19 +142,7 @@ export default function StudentSettings() {
 
       </div>
 
-      {/* Logout */}
-
-      <button className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-3xl py-5 font-bold text-lg shadow-xl hover:scale-[1.02] transition">
-
-        <div className="flex items-center justify-center gap-3">
-
-          <LogOut size={24} />
-
-          Logout
-
-        </div>
-
-      </button>
+      
 
       {/* Version */}
 

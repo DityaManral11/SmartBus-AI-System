@@ -1,15 +1,27 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Login() {
   const { role } = useParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedLogin =
+      JSON.parse(localStorage.getItem("rememberMe"));
+
+    if (savedLogin) {
+      setEmail(savedLogin.email);
+      setPassword(savedLogin.password);
+      setRememberMe(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-900 via-blue-700 to-cyan-500">
@@ -101,7 +113,11 @@ export default function Login() {
           <div className="flex justify-between text-white text-sm mb-6">
 
             <label className="flex items-center gap-2">
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               Remember Me
             </label>
 
@@ -152,6 +168,18 @@ export default function Login() {
                 "currentUser",
                 JSON.stringify(loggedUser)
               );
+
+              if (rememberMe) {
+                localStorage.setItem(
+                  "rememberMe",
+                  JSON.stringify({
+                    email,
+                    password,
+                  })
+                );
+              } else {
+                localStorage.removeItem("rememberMe");
+              }
 
               console.log(
                 "Current User:",

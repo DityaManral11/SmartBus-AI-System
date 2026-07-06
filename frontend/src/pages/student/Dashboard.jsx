@@ -8,10 +8,47 @@ import {
 } from "lucide-react";
 import { CircleUserRound } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+
+
+  const [student, setStudent] = useState(null);
+  const [bus, setBus] = useState(null);
+  const [driver, setDriver] = useState(null);
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+      (b) => b.busNo === currentUser.bus
+    );
+
+    setBus(assignedBus);
+
+    if (assignedBus) {
+      const driverData = users.find(
+        (u) =>
+          u.role === "driver" &&
+          u.email === assignedBus.driver
+      );
+
+      setDriver(driverData);
+    }
+  }, []);
+
+
   const user = JSON.parse(localStorage.getItem("user"));
-  
+
   return (
     <div className="space-y-8">
 
@@ -28,7 +65,7 @@ export default function Dashboard() {
         </p>
 
         <h1 className="text-5xl font-extrabold mt-3">
-          {user?.name}
+          {student?.name}
         </h1>
 
         <p className="mt-3 text-xl opacity-90">
@@ -53,11 +90,11 @@ export default function Dashboard() {
               </p>
 
               <h2 className="text-4xl font-bold mt-3">
-                BUS-07
+                {bus?.busNo || "N/A"}
               </h2>
 
               <p className="mt-4 text-sm opacity-90">
-                Driver : Rahul Sharma
+                Driver : {driver?.name || "Not Assigned"}
               </p>
             </div>
 
@@ -81,11 +118,11 @@ export default function Dashboard() {
               </p>
 
               <h2 className="text-3xl font-bold mt-3">
-                North Campus
+                {bus?.route || "N/A"}
               </h2>
 
               <p className="mt-4 text-sm opacity-90">
-                12 Stops
+                {bus?.pickupPoints?.split(",").length || 0} Stops
               </p>
             </div>
 
@@ -109,11 +146,11 @@ export default function Dashboard() {
               </p>
 
               <h2 className="text-4xl font-bold mt-3">
-                08:15
+                {bus?.pickupTime || "N/A"}
               </h2>
 
               <p className="mt-4 text-sm opacity-90">
-                On Time
+                {bus?.status || "Running"}
               </p>
             </div>
 
@@ -137,7 +174,7 @@ export default function Dashboard() {
               </p>
 
               <h2 className="text-4xl font-bold mt-3">
-                03
+                1
               </h2>
 
               <p className="mt-4 text-sm opacity-90">
@@ -182,9 +219,7 @@ export default function Dashboard() {
 
             <Marker position={[28.4595, 77.0266]}>
               <Popup>
-
-                BUS-07
-
+                {bus?.busNo}
               </Popup>
             </Marker>
 
@@ -207,7 +242,7 @@ export default function Dashboard() {
 
             <h2 className="text-2xl font-bold mt-4">
 
-              Rahul Sharma
+              {driver?.name || "N/A"}
 
             </h2>
 
@@ -226,7 +261,7 @@ export default function Dashboard() {
               <Phone />
 
               <span>
-                +91 9876543210
+                +91 {driver?.phone || "N/A"}
               </span>
 
             </div>
@@ -236,17 +271,18 @@ export default function Dashboard() {
               <User />
 
               <span>
-                Experience : 8 Years
+                License : {driver?.licenseNo || "N/A"}
               </span>
 
             </div>
 
           </div>
 
-          <button className="w-full mt-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:scale-105 transition">
-
+          <button
+            onClick={() => window.open(`tel:${driver?.phone}`)}
+            className="w-full mt-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:scale-105 transition"
+          >
             Contact Driver
-
           </button>
 
         </div>
@@ -275,7 +311,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>08:15 AM</p>
+              <p>{bus?.pickupTime || "N/A"}</p>
 
             </div>
 
@@ -287,7 +323,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>09:00 AM</p>
+              <p>{bus?.arrivalTime || "N/A"}</p>
 
             </div>
 
@@ -299,7 +335,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>05:15 PM</p>
+              <p>{bus?.returnTime || "N/A"}</p>
 
             </div>
 
@@ -318,21 +354,15 @@ export default function Dashboard() {
           <div className="space-y-5">
 
             <div className="bg-blue-50 rounded-xl p-4">
-
-              🚌 Bus will arrive in 10 minutes.
-
+              🚌 Your Bus : {bus?.busNo}
             </div>
 
             <div className="bg-green-50 rounded-xl p-4">
-
-              ✅ Route updated successfully.
-
+              📍 Route : {bus?.route}
             </div>
 
-            <div className="bg-red-50 rounded-xl p-4">
-
-              ⚠ Heavy traffic near Gate No.2
-
+            <div className="bg-yellow-50 rounded-xl p-4">
+              ⏰ Pickup Time : {bus?.pickupTime || "N/A"}
             </div>
 
           </div>
