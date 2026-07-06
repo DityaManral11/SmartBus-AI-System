@@ -105,7 +105,12 @@ export default function Login() {
               Remember Me
             </label>
 
-            <button>Forgot Password?</button>
+            <Link
+              to={`/forgot-password/${role}`}
+              className="hover:text-cyan-300"
+            >
+              Forgot Password?
+            </Link>
 
           </div>
 

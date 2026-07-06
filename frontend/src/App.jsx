@@ -30,6 +30,7 @@ import Settings from "./pages/admin/Settings";
 import AdminLiveTracking from "./pages/admin/LiveTracking";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DriverStudents from "./pages/driver/Students";
+import ForgotPassword from "./pages/ForgotPassword";
 
 
 function App() {
@@ -57,6 +58,11 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<StudentSettings />} />
         </Route>
+
+        <Route
+          path="/forgot-password/:role"
+          element={<ForgotPassword />}
+        />
 
         <Route
           path="/driver"
