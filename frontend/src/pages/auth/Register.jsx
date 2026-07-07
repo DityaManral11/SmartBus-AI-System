@@ -311,7 +311,7 @@ export default function Register() {
             Already have an account?
 
             <Link
-              to="/"
+              to={role ? `/login/${role}` : "/"}
               className="ml-2 font-bold text-cyan-300 hover:text-white"
             >
               Login
