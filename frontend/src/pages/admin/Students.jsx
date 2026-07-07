@@ -72,6 +72,16 @@ export default function Students() {
     });
 
     setEditEmail(student.email);
+    const selectedBus = buses.find(
+      (bus) => bus.busNo === student.bus
+    );
+
+    setPickupPoints(
+      selectedBus?.pickupPoints
+        ?.split(",")
+        .map((p) => p.trim()) || []
+    );
+
     setShowForm(true);
   };
 
@@ -212,6 +222,7 @@ export default function Students() {
                 password: "",
               });
 
+              setPickupPoints([]);
               setShowForm(true);
             }}
             className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
@@ -352,12 +363,26 @@ export default function Students() {
 
             <select
               value={newStudent.bus}
-              onChange={(e) =>
+              onChange={(e) => {
+                const selectedBus = e.target.value;
+
+                const selectedBusData = buses.find(
+                  (bus) => bus.busNo === selectedBus
+                );
+
+                const points =
+                  selectedBusData?.pickupPoints
+                    ?.split(",")
+                    .map((p) => p.trim()) || [];
+
+                setPickupPoints(points);
+
                 setNewStudent({
                   ...newStudent,
-                  bus: e.target.value,
-                })
-              }
+                  bus: selectedBus,
+                  pickup: "",
+                });
+              }}
               className="border p-3 rounded-xl"
             >
               <option value="">Select Bus</option>

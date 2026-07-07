@@ -7,12 +7,10 @@ import AddScheduleModal from "../../components/AddScheduleModal";
 export default function Schedules() {
 
     const [open, setOpen] = useState(false);
-
     const [schedules, setSchedules] = useState([]);
-
     const [editSchedule, setEditSchedule] = useState(null);
-
     const [viewSchedule, setViewSchedule] = useState(null);
+    const [drivers, setDrivers] = useState([]);
 
     const [search, setSearch] = useState("");
 
@@ -26,43 +24,41 @@ export default function Schedules() {
                 localStorage.getItem("buses")
             ) || [];
 
+        const users =
+            JSON.parse(localStorage.getItem("users")) || [];
+
+        const driverList = users.filter(
+            (user) => user.role === "driver"
+        );
+
+        setDrivers(driverList);
+
         const savedSchedules =
             JSON.parse(
                 localStorage.getItem("schedules")
             ) || [];
 
-        const updatedSchedules =
-            buses.map((bus) => {
+        const updatedSchedules = buses.map((bus) => {
+            const existing = savedSchedules.find(
+                (s) => s.busNo === bus.busNo
+            );
 
-                const existing =
-                    savedSchedules.find(
-                        (s) =>
-                            s.busNo === bus.busNo
-                    );
+            const driverUser = users.find(
+                (u) => u.email === bus.driver
+            );
 
-                if (existing)
-                    return existing;
-
-                return {
-
-                    busNo: bus.busNo,
-
-                    driver: bus.driver,
-
-                    route: bus.route,
-
-                    departure: "",
-
-                    arrival: "",
-
-                    status:
-                        bus.status === "Maintenance"
-                            ? "Inactive"
-                            : "Active",
-
-                };
-
-            });
+            return {
+                busNo: bus.busNo,
+                driver: driverUser ? driverUser.name : bus.driver,
+                route: bus.route,
+                departure: existing?.departure || "",
+                arrival: existing?.arrival || "",
+                status: existing?.status ||
+                    (bus.status === "Maintenance"
+                        ? "Inactive"
+                        : "Active"),
+            };
+        });
 
         setSchedules(updatedSchedules);
 
@@ -250,6 +246,7 @@ export default function Schedules() {
                 setSchedules={setSchedules}
                 editSchedule={editSchedule}
                 setEditSchedule={setEditSchedule}
+                drivers={drivers}
             />
 
             {/* View Schedule Modal */}

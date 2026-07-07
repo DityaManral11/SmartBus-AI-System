@@ -6,6 +6,7 @@ import {
   Polyline,
 } from "react-leaflet";
 import { CircleUserRound } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import "leaflet/dist/leaflet.css";
 
@@ -34,9 +35,51 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function LiveTracking() {
-  const bus = [28.6139, 77.209];
-  const college = [28.6208, 77.214];
-  const student = [28.609, 77.201];
+  const busLocation = [28.6139, 77.209];
+  const studentLocation = [28.609, 77.201];
+  const collegeLocation = [28.6208, 77.214];
+  const [student, setStudent] = useState(null);
+  const [busData, setBusData] = useState(null);
+  const [driver, setDriver] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+
+  useEffect(() => {
+
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+      (b) => b.busNo === currentUser.bus
+    );
+
+    if (!assignedBus) return;
+
+    setBusData(assignedBus);
+
+    const driverData = users.find(
+      (u) => u.email === assignedBus.driver
+    );
+
+    setDriver(driverData);
+
+    const busSchedule = schedules.find(
+      (s) => s.busNo === assignedBus.busNo
+    );
+
+    setSchedule(busSchedule);
+
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -68,7 +111,7 @@ export default function LiveTracking() {
           </p>
 
           <h2 className="text-3xl font-bold">
-            BUS-07
+            {busData?.busNo || "N/A"}
           </h2>
 
         </div>
@@ -82,7 +125,7 @@ export default function LiveTracking() {
           </p>
 
           <h2 className="text-3xl font-bold">
-            42 km/h
+            42 km/hr
           </h2>
 
         </div>
@@ -96,7 +139,7 @@ export default function LiveTracking() {
           </p>
 
           <h2 className="text-3xl font-bold">
-            12 min
+            {schedule?.departure || "N/A"}
           </h2>
 
         </div>
@@ -110,7 +153,7 @@ export default function LiveTracking() {
           </p>
 
           <h2 className="text-3xl font-bold">
-            Running
+            {busData?.status || "N/A"}
           </h2>
 
         </div>
@@ -122,7 +165,7 @@ export default function LiveTracking() {
       <div className="rounded-3xl overflow-hidden shadow-xl">
 
         <MapContainer
-          center={bus}
+          center={busLocation}
           zoom={14}
           style={{
             height: "500px",
@@ -135,33 +178,24 @@ export default function LiveTracking() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          <Marker position={student}>
-            <Popup>
-              Student Pickup
-            </Popup>
+          <Marker position={studentLocation}>
+            <Popup>Student Pickup</Popup>
           </Marker>
 
-          <Marker position={bus}>
-            <Popup>
-              BUS-07 Current Location
-            </Popup>
+          <Marker position={busLocation}>
+            <Popup>{busData?.busNo} Current Location</Popup>
           </Marker>
 
-          <Marker position={college}>
-            <Popup>
-              University
-            </Popup>
+          <Marker position={collegeLocation}>
+            <Popup>University</Popup>
           </Marker>
 
           <Polyline
             positions={[
-              student,
-              bus,
-              college,
+              studentLocation,
+              busLocation,
+              collegeLocation,
             ]}
-            pathOptions={{
-              color: "blue",
-            }}
           />
 
         </MapContainer>
@@ -186,15 +220,15 @@ export default function LiveTracking() {
           </div>
 
           <h3 className="text-xl font-semibold mt-4">
-            Rahul Sharma
+            {driver?.name || "N/A"}
           </h3>
 
           <p className="text-gray-500">
-            Experience: 8 Years
+            Experience: {driver?.experience || "N/A"}
           </p>
 
           <p className="mt-2">
-            📞 +91 9876543210
+            📞 +91 {driver?.phone || "N/A"}
           </p>
 
         </div>
@@ -217,10 +251,17 @@ export default function LiveTracking() {
           </div>
 
           <p className="mt-4 text-lg">
-            40% Journey Completed
+            {busData?.status === "Running"
+              ? "60% Journey Completed"
+              : busData?.status === "Idle"
+                ? "10% Journey Completed"
+                : "Bus Under Maintenance"}
           </p>
 
-          <button className="mt-8 flex items-center gap-3 bg-blue-600 text-white px-6 py-3 rounded-xl">
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-8 flex items-center gap-3 bg-blue-600 text-white px-6 py-3 rounded-xl"
+          >
 
             <RefreshCw size={18} />
 

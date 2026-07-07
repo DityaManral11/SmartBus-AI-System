@@ -10,9 +10,50 @@ import {
     Users,
     Award,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const [student, setStudent] = useState(null);
+    const [bus, setBus] = useState(null);
+    const [driver, setDriver] = useState(null);
+    const [schedule, setSchedule] = useState(null);
+
+    useEffect(() => {
+
+    const currentUser =
+        JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const users =
+        JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+        JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+        JSON.parse(localStorage.getItem("schedules")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+        (b) => b.busNo === currentUser.bus
+    );
+
+    setBus(assignedBus);
+
+    const driverData = users.find(
+        (u) => u.email === assignedBus?.driver
+    );
+
+    setDriver(driverData);
+
+    const busSchedule = schedules.find(
+        (s) => s.busNo === assignedBus?.busNo
+    );
+
+    setSchedule(busSchedule);
+
+}, []);
+
     return (
         <div className="space-y-8">
 
@@ -44,7 +85,7 @@ export default function Profile() {
                     <div className="flex-1">
 
                         <h2 className="text-3xl font-bold">
-                            {user?.name}
+                            {student?.name || "N/A"}
                         </h2>
 
                         <p className="text-gray-500 mt-2">
@@ -55,22 +96,22 @@ export default function Profile() {
 
                             <div className="flex items-center gap-3">
                                 <School className="text-blue-600" />
-                                <span>{user?.rollNo}</span>
+                                <span>{student?.rollNo || "N/A"}</span>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <Mail className="text-green-600" />
-                                <span>{user?.email}</span>
+                                <span>{student?.email || "N/A"}</span>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <Phone className="text-orange-500" />
-                                <span>+91 {user?.phone}</span>
+                                <span>+91 {student?.phone || "N/A"}</span>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <Shield className="text-purple-600" />
-                                <span>{user?.semester}</span>
+                                <span>{student?.semester || "N/A"}</span>
                             </div>
 
                         </div>
@@ -88,25 +129,25 @@ export default function Profile() {
                 <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
                     <Award size={35} />
                     <p className="mt-4">Attendance</p>
-                    <h2 className="text-3xl font-bold mt-2">96%</h2>
+                    <h2 className="text-3xl font-bold mt-2">100%</h2>
                 </div>
 
                 <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-6 text-white shadow-xl">
                     <Bus size={35} />
                     <p className="mt-4">Trips</p>
-                    <h2 className="text-3xl font-bold mt-2">152</h2>
+                    <h2 className="text-3xl font-bold mt-2">1</h2>
                 </div>
 
                 <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl p-6 text-white shadow-xl">
                     <Clock size={35} />
                     <p className="mt-4">On Time</p>
-                    <h2 className="text-3xl font-bold mt-2">148</h2>
+                    <h2 className="text-3xl font-bold mt-2"> {bus?.status === "Running" ? 1 : 0} </h2>
                 </div>
 
                 <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-3xl p-6 text-white shadow-xl">
                     <Users size={35} />
                     <p className="mt-4">Missed</p>
-                    <h2 className="text-3xl font-bold mt-2">4</h2>
+                    <h2 className="text-3xl font-bold mt-2"> {bus?.status === "Running" ? 0 : 1} </h2>
                 </div>
 
             </div>
@@ -127,22 +168,22 @@ export default function Profile() {
 
                         <div className="flex items-center gap-3">
                             <Bus className="text-blue-600" />
-                            <span>Bus Number : BUS-07</span>
+                            <span>Bus Number : {bus?.busNo || "N/A"}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <MapPinned className="text-green-600" />
-                            <span>Route : North Campus</span>
+                            <span>Route : {bus?.route || "N/A"}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <Clock className="text-orange-500" />
-                            <span>Pickup : 08:15 AM</span>
+                            <span>Pickup : {schedule?.departure || "N/A"}</span>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <User className="text-purple-600" />
-                            <span>Driver : Rahul Sharma</span>
+                            <span>Driver : {driver?.name || "N/A"}</span>
                         </div>
 
                     </div>
@@ -159,20 +200,7 @@ export default function Profile() {
 
                     <div className="space-y-5">
 
-                        <div className="flex items-center gap-3">
-                            <Users className="text-blue-600" />
-                            <span>Ramesh Kumar</span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <Phone className="text-green-600" />
-                            <span>+91 9123456789</span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <MapPinned className="text-red-500" />
-                            <span>Patna, Bihar</span>
-                        </div>
+                        Guardian Not Added
 
                     </div>
 

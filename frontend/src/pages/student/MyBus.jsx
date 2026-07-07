@@ -8,8 +8,51 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { CircleUserRound } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function MyBus() {
+  const [student, setStudent] = useState(null);
+  const [bus, setBus] = useState(null);
+  const [driver, setDriver] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+
+  useEffect(() => {
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const users =
+      JSON.parse(localStorage.getItem("users")) || [];
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+      (b) => b.busNo === currentUser.bus
+    );
+
+    if (!assignedBus) return;
+
+    setBus(assignedBus);
+
+    const driverData = users.find(
+      (u) => u.email === assignedBus.driver
+    );
+
+    setDriver(driverData);
+
+    const busSchedule = schedules.find(
+      (s) => s.busNo === assignedBus.busNo
+    );
+
+    setSchedule(busSchedule);
+
+  }, []);
+
   return (
     <div className="space-y-8">
 
@@ -22,7 +65,9 @@ export default function MyBus() {
         </h1>
 
         <p className="mt-3 text-blue-100">
-          View your assigned bus and route details.
+          {bus
+            ? `Assigned Bus : ${bus.busNo}`
+            : "No Bus Assigned"}
         </p>
 
       </div>
@@ -40,7 +85,7 @@ export default function MyBus() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            BUS-07
+            {bus?.busNo || "Not Assigned"}
           </h2>
 
         </div>
@@ -54,7 +99,7 @@ export default function MyBus() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            45 Seats
+            {bus?.capacity || "N/A"} Seats
           </h2>
 
         </div>
@@ -68,7 +113,7 @@ export default function MyBus() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            08:15 AM
+            {schedule?.departure || "N/A"}
           </h2>
 
         </div>
@@ -82,7 +127,7 @@ export default function MyBus() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            Running
+            {bus?.status || "N/A"}
           </h2>
 
         </div>
@@ -108,7 +153,7 @@ export default function MyBus() {
 
             <h2 className="text-2xl font-bold mt-5">
 
-              Rahul Sharma
+              {driver?.name || "Not Assigned"}
 
             </h2>
 
@@ -126,7 +171,7 @@ export default function MyBus() {
 
               <Phone className="text-blue-600" />
 
-              +91 9876543210
+              +91 {driver?.phone || "N/A"}
 
             </div>
 
@@ -134,17 +179,18 @@ export default function MyBus() {
 
               <User className="text-green-600" />
 
-              Experience : 8 Years
+              Experience : {driver?.experience || "N/A"}
 
             </div>
 
           </div>
 
-          <button className="mt-8 w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold">
-
+          <a
+            href={`tel:${driver?.phone}`}
+            className="block text-center mt-8 w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold"
+          >
             Contact Driver
-
-          </button>
+          </a>
 
         </div>
 
@@ -158,47 +204,47 @@ export default function MyBus() {
 
           </h2>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
 
-            <div className="flex items-center gap-5">
+            {bus?.pickupPoints
+              ?.split(",")
+              .map((point, index) => (
 
-              <div className="w-5 h-5 rounded-full bg-green-500"></div>
+                <div key={index}>
 
-              <span className="text-lg">
+                  <div className="flex items-center gap-5">
 
-                Home Pickup
+                    <div
+                      className={`w-5 h-5 rounded-full ${point === student?.pickup
+                        ? "bg-blue-600 animate-pulse"
+                        : "bg-green-500"
+                        }`}
+                    ></div>
 
-              </span>
+                    <span
+                      className={
+                        point === student?.pickup
+                          ? "font-bold text-lg"
+                          : "text-lg"
+                      }
+                    >
+                      {point}
 
-            </div>
+                      {point === student?.pickup &&
+                        " (Your Pickup Point)"}
 
-            <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
+                    </span>
 
-            <div className="flex items-center gap-5">
+                  </div>
 
-              <div className="w-5 h-5 rounded-full bg-blue-600 animate-pulse"></div>
+                  {index !==
+                    bus.pickupPoints.split(",").length - 1 && (
+                      <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
+                    )}
 
-              <span className="text-lg font-semibold">
+                </div>
 
-                City Bus Stop (Current)
-
-              </span>
-
-            </div>
-
-            <div className="ml-2 border-l-4 border-dashed border-blue-300 h-10"></div>
-
-            <div className="flex items-center gap-5">
-
-              <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-
-              <span className="text-lg">
-
-                University Gate
-
-              </span>
-
-            </div>
+              ))}
 
           </div>
 
@@ -228,10 +274,8 @@ export default function MyBus() {
 
             </h3>
 
-            <p className="mt-2">
-
-              08:15 AM
-
+            <p>
+              {schedule?.departure || "N/A"}
             </p>
 
           </div>
@@ -246,10 +290,8 @@ export default function MyBus() {
 
             </h3>
 
-            <p className="mt-2">
-
-              09:00 AM
-
+            <p>
+              {schedule?.arrival || "N/A"}
             </p>
 
           </div>
@@ -264,10 +306,8 @@ export default function MyBus() {
 
             </h3>
 
-            <p className="mt-2">
-
-              05:15 PM
-
+            <p>
+              {schedule?.return || "N/A"}
             </p>
 
           </div>

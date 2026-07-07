@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [student, setStudent] = useState(null);
   const [bus, setBus] = useState(null);
   const [driver, setDriver] = useState(null);
+  const [schedule, setSchedule] = useState(null);
 
   useEffect(() => {
     const currentUser =
@@ -23,6 +24,9 @@ export default function Dashboard() {
 
     const users =
       JSON.parse(localStorage.getItem("users")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
 
     const buses =
       JSON.parse(localStorage.getItem("buses")) || [];
@@ -34,6 +38,23 @@ export default function Dashboard() {
     );
 
     setBus(assignedBus);
+
+    if (assignedBus) {
+
+      const busSchedule = schedules.find(
+        (s) => s.busNo === assignedBus.busNo
+      );
+
+      setSchedule(busSchedule);
+
+      const driverData = users.find(
+        (u) =>
+          u.role === "driver" &&
+          u.email === assignedBus.driver
+      );
+
+      setDriver(driverData);
+    }
 
     if (assignedBus) {
       const driverData = users.find(
@@ -146,7 +167,7 @@ export default function Dashboard() {
               </p>
 
               <h2 className="text-4xl font-bold mt-3">
-                {bus?.pickupTime || "N/A"}
+                {schedule?.departure || "N/A"}
               </h2>
 
               <p className="mt-4 text-sm opacity-90">
@@ -311,7 +332,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>{bus?.pickupTime || "N/A"}</p>
+              <p>{schedule?.departure || "N/A"}</p>
 
             </div>
 
@@ -323,7 +344,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>{bus?.arrivalTime || "N/A"}</p>
+              <p>{schedule?.arrival || "N/A"}</p>
 
             </div>
 
@@ -335,7 +356,7 @@ export default function Dashboard() {
 
               </h3>
 
-              <p>{bus?.returnTime || "N/A"}</p>
+              <p>{schedule?.return || "N/A"}</p>
 
             </div>
 
@@ -362,7 +383,7 @@ export default function Dashboard() {
             </div>
 
             <div className="bg-yellow-50 rounded-xl p-4">
-              ⏰ Pickup Time : {bus?.pickupTime || "N/A"}
+              ⏰ Pickup Time : {schedule?.departure || "N/A"}
             </div>
 
           </div>

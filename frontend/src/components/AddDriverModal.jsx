@@ -13,6 +13,9 @@ export default function AddDriverModal({
     name: "",
     phone: "",
     email: "",
+    licenseNo: "",
+    password: "",
+    bus: "",
     status: "",
   });
 
@@ -34,6 +37,8 @@ export default function AddDriverModal({
       !driver.name ||
       !driver.phone ||
       !driver.email ||
+      !driver.licenseNo ||
+      !driver.password ||
       !driver.status
     ) {
       alert("Please fill all fields.");
@@ -84,6 +89,9 @@ export default function AddDriverModal({
             name: driver.name,
             phone: driver.phone,
             email: driver.email,
+            licenseNo: driver.licenseNo,
+            password: driver.password,
+            bus: driver.bus,
             status: driver.status,
           }
           : u
@@ -96,9 +104,7 @@ export default function AddDriverModal({
       if (!alreadyExists) {
         updatedUsers.push({
           ...driver,
-          password: "123456",
           role: "driver",
-          licenseNo: "",
         });
       }
     }
@@ -167,6 +173,32 @@ export default function AddDriverModal({
               setDriver({
                 ...driver,
                 email: e.target.value,
+              })
+            }
+            className="w-full border rounded-xl p-3"
+          />
+
+          <input
+            type="text"
+            placeholder="License Number"
+            value={driver.licenseNo}
+            onChange={(e) =>
+              setDriver({
+                ...driver,
+                licenseNo: e.target.value,
+              })
+            }
+            className="w-full border rounded-xl p-3"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={driver.password}
+            onChange={(e) =>
+              setDriver({
+                ...driver,
+                password: e.target.value,
               })
             }
             className="w-full border rounded-xl p-3"

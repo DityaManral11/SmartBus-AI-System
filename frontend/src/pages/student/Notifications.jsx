@@ -7,51 +7,110 @@ import {
   CheckCircle,
   CalendarDays,
 } from "lucide-react";
-
-const notifications = [
-  {
-    id: 1,
-    title: "Bus is arriving",
-    message: "Your bus will arrive at your pickup point in 10 minutes.",
-    time: "5 min ago",
-    icon: Bus,
-    color: "from-blue-600 to-cyan-500",
-  },
-  {
-    id: 2,
-    title: "Route Updated",
-    message: "Today's route has been updated due to road maintenance.",
-    time: "25 min ago",
-    icon: MapPinned,
-    color: "from-orange-500 to-yellow-500",
-  },
-  {
-    id: 3,
-    title: "Pickup Reminder",
-    message: "Please reach your pickup point 5 minutes early.",
-    time: "1 hour ago",
-    icon: Clock,
-    color: "from-purple-600 to-pink-500",
-  },
-  {
-    id: 4,
-    title: "Holiday Notice",
-    message: "No bus service this Sunday due to college holiday.",
-    time: "Yesterday",
-    icon: CalendarDays,
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    id: 5,
-    title: "Safety Alert",
-    message: "Always wear your ID card while travelling in the bus.",
-    time: "2 days ago",
-    icon: AlertTriangle,
-    color: "from-red-500 to-rose-500",
-  },
-];
+import { useEffect, useState } from "react";
 
 export default function Notifications() {
+
+  const [student, setStudent] = useState(null);
+  const [bus, setBus] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+      (b) => b.busNo === currentUser.bus
+    );
+
+    setBus(assignedBus);
+
+    const busSchedule = schedules.find(
+      (s) => s.busNo === assignedBus?.busNo
+    );
+
+    setSchedule(busSchedule);
+
+    const list = [];
+
+    if (assignedBus) {
+
+      list.push({
+        id: 1,
+        title: "Assigned Bus",
+        message: `Your assigned bus is ${assignedBus.busNo}.`,
+        time: "Today",
+        icon: Bus,
+        color: "from-blue-600 to-cyan-500",
+        read: false,
+      });
+
+      list.push({
+        id: 2,
+        title: "Today's Pickup",
+        message: `Pickup time is ${busSchedule?.departure || "N/A"}.`,
+        time: "Today",
+        icon: Clock,
+        color: "from-orange-500 to-yellow-500",
+        read: false,
+      });
+
+      list.push({
+        id: 3,
+        title: "Route",
+        message: `Today's route is ${assignedBus.route}.`,
+        time: "Today",
+        icon: MapPinned,
+        color: "from-purple-600 to-pink-500",
+        read: true,
+      });
+
+      if (assignedBus.status === "Maintenance") {
+
+        list.push({
+          id: 4,
+          title: "Bus Maintenance",
+          message: "Your assigned bus is under maintenance.",
+          time: "Today",
+          icon: AlertTriangle,
+          color: "from-red-500 to-pink-500",
+          read: false,
+        });
+
+      }
+
+      if (
+        new Date().getDay() === 0 ||
+        new Date().getDay() === 6
+      ) {
+
+        list.push({
+          id: 5,
+          title: "Holiday",
+          message: "No bus service today.",
+          time: "Today",
+          icon: CalendarDays,
+          color: "from-green-500 to-emerald-500",
+          read: true,
+        });
+
+      }
+
+    }
+
+    setNotifications(list);
+
+  }, []);
   return (
     <div className="space-y-8">
 
@@ -92,7 +151,7 @@ export default function Notifications() {
           </p>
 
           <h2 className="text-4xl font-bold mt-2">
-            25
+            {notifications.length}
           </h2>
 
         </div>
@@ -106,7 +165,7 @@ export default function Notifications() {
           </p>
 
           <h2 className="text-4xl font-bold mt-2">
-            18
+            {notifications.filter(n => n.read).length}
           </h2>
 
         </div>
@@ -120,7 +179,7 @@ export default function Notifications() {
           </p>
 
           <h2 className="text-4xl font-bold mt-2">
-            7
+            {notifications.filter(n => !n.read).length}
           </h2>
 
         </div>
@@ -170,7 +229,12 @@ export default function Notifications() {
 
                 </div>
 
-                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse mt-2"></span>
+                <span
+                  className={`w-3 h-3 rounded-full mt-2 ${item.read
+                      ? "bg-green-500"
+                      : "bg-red-500 animate-pulse"
+                    }`}
+                />
 
               </div>
 

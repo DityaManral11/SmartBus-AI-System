@@ -5,67 +5,54 @@ import {
   MapPinned,
   CheckCircle,
 } from "lucide-react";
-
-const schedule = [
-  {
-    day: "Monday",
-    pickup: "08:15 AM",
-    arrival: "09:00 AM",
-    returnTime: "05:15 PM",
-    route: "North Campus",
-    status: "Active",
-  },
-  {
-    day: "Tuesday",
-    pickup: "08:15 AM",
-    arrival: "09:00 AM",
-    returnTime: "05:15 PM",
-    route: "North Campus",
-    status: "Active",
-  },
-  {
-    day: "Wednesday",
-    pickup: "08:15 AM",
-    arrival: "09:00 AM",
-    returnTime: "05:15 PM",
-    route: "North Campus",
-    status: "Active",
-  },
-  {
-    day: "Thursday",
-    pickup: "08:15 AM",
-    arrival: "09:00 AM",
-    returnTime: "05:15 PM",
-    route: "North Campus",
-    status: "Active",
-  },
-  {
-    day: "Friday",
-    pickup: "08:15 AM",
-    arrival: "09:00 AM",
-    returnTime: "05:15 PM",
-    route: "North Campus",
-    status: "Active",
-  },
-  {
-    day: "Saturday",
-    pickup: "09:00 AM",
-    arrival: "09:40 AM",
-    returnTime: "02:00 PM",
-    route: "North Campus",
-    status: "Half Day",
-  },
-  {
-    day: "Sunday",
-    pickup: "--",
-    arrival: "--",
-    returnTime: "--",
-    route: "Holiday",
-    status: "Holiday",
-  },
-];
-
+import { useEffect, useState } from "react";
 export default function Schedule() {
+  const [student, setStudent] = useState(null);
+  const [bus, setBus] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+
+  const weekDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  useEffect(() => {
+
+    const currentUser =
+      JSON.parse(localStorage.getItem("currentUser")) || {};
+
+    const buses =
+      JSON.parse(localStorage.getItem("buses")) || [];
+
+    const schedules =
+      JSON.parse(localStorage.getItem("schedules")) || [];
+
+    setStudent(currentUser);
+
+    const assignedBus = buses.find(
+      (b) => b.busNo === currentUser.bus
+    );
+
+    setBus(assignedBus);
+
+    if (assignedBus) {
+
+      const busSchedule = schedules.find(
+        (s) => s.busNo === assignedBus.busNo
+      );
+
+      setSchedule(busSchedule);
+
+    }
+
+
+
+  }, []);
   return (
     <div className="space-y-8">
 
@@ -95,7 +82,7 @@ export default function Schedule() {
           <p className="mt-4">Pickup</p>
 
           <h2 className="text-3xl font-bold">
-            08:15 AM
+            {schedule?.departure || "N/A"}
           </h2>
 
         </div>
@@ -107,7 +94,7 @@ export default function Schedule() {
           <p className="mt-4">Arrival</p>
 
           <h2 className="text-3xl font-bold">
-            09:00 AM
+            {schedule?.arrival || "N/A"}
           </h2>
 
         </div>
@@ -119,7 +106,7 @@ export default function Schedule() {
           <p className="mt-4">Return</p>
 
           <h2 className="text-3xl font-bold">
-            05:15 PM
+            04:00 PM
           </h2>
 
         </div>
@@ -131,7 +118,7 @@ export default function Schedule() {
           <p className="mt-4">Route</p>
 
           <h2 className="text-2xl font-bold">
-            North Campus
+            {schedule?.route || "N/A"}
           </h2>
 
         </div>
@@ -176,7 +163,7 @@ export default function Schedule() {
 
             <tbody>
 
-              {schedule.map((item, index) => (
+              {weekDays.map((day, index) => (
 
                 <tr
                   key={index}
@@ -184,38 +171,44 @@ export default function Schedule() {
                 >
 
                   <td className="p-4 font-semibold">
-                    {item.day}
+                    {day}
                   </td>
 
                   <td className="p-4">
-                    {item.pickup}
+                    {day === "Saturday" || day === "Sunday"
+                      ? "--"
+                      : schedule?.departure || "N/A"}
                   </td>
 
                   <td className="p-4">
-                    {item.arrival}
+                    {day === "Saturday" || day === "Sunday"
+                      ? "--"
+                      : schedule?.arrival || "N/A"}
                   </td>
 
                   <td className="p-4">
-                    {item.returnTime}
+                    {day === "Saturday" || day === "Sunday"
+                      ? "--"
+                      : schedule?.return || "04:00 PM"}
                   </td>
 
                   <td className="p-4">
-                    {item.route}
+                    {day === "Saturday" || day === "Sunday"
+                      ? "Holiday"
+                      : bus?.route || "N/A"}
                   </td>
 
                   <td className="p-4">
 
                     <span
-                      className={`px-4 py-2 rounded-full text-white text-sm
-                      ${
-                        item.status === "Holiday"
-                          ? "bg-red-500"
-                          : item.status === "Half Day"
-                          ? "bg-orange-500"
-                          : "bg-green-500"
-                      }`}
+                      className={`px-4 py-2 rounded-full text-white text-sm ${day === "Saturday" || day === "Sunday"
+                        ? "bg-red-500"
+                        : "bg-green-500"
+                        }`}
                     >
-                      {item.status}
+                      {day === "Saturday" || day === "Sunday"
+                        ? "Holiday"
+                        : schedule?.status || "Active"}
                     </span>
 
                   </td>

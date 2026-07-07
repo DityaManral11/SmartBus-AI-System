@@ -7,6 +7,7 @@ export default function AddScheduleModal({
   setSchedules,
   editSchedule,
   setEditSchedule,
+  drivers,
 }) {
 
   const emptySchedule = {
@@ -138,9 +139,7 @@ export default function AddScheduleModal({
             className="w-full border p-3 rounded-xl"
           />
 
-          <input
-            type="text"
-            placeholder="Driver"
+          <select
             value={schedule.driver}
             onChange={(e) =>
               setSchedule({
@@ -149,7 +148,18 @@ export default function AddScheduleModal({
               })
             }
             className="w-full border p-3 rounded-xl"
-          />
+          >
+            <option value="">Select Driver</option>
+
+            {drivers.map((driver) => (
+              <option
+                key={driver.email}
+                value={driver.name}
+              >
+                {driver.name}
+              </option>
+            ))}
+          </select>
 
           <input
             type="text"

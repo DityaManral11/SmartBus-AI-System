@@ -71,7 +71,7 @@ export default function AddBusModal({
     );
 
     const updatedDrivers = drivers.map((d) =>
-      d.email === bus.driver
+      d.name === bus.driver
         ? {
           ...d,
           bus: bus.busNo,
@@ -134,7 +134,7 @@ export default function AddBusModal({
             <option value="">Select Driver</option>
 
             {drivers.map((driver) => (
-              <option key={driver.email} value={driver.email}>
+              <option key={driver.email} value={driver.name}>
                 {driver.name}
               </option>
             ))}
