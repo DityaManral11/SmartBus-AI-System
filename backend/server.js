@@ -9,10 +9,13 @@ const db = require("./db");
 
 const app = express();
 
+const busRoutes = require("./routes/buses");
+
 app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/buses", busRoutes);
 
 app.get("/", (req, res) => {
   res.json({
