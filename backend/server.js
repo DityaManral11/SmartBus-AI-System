@@ -11,6 +11,8 @@ const app = express();
 
 const busRoutes = require("./routes/buses");
 const routeRoutes = require("./routes/routes");
+const busRouteRoutes = require("./routes/busRoutes");
+const studentRoutes = require("./routes/students");
 
 app.use(cors());
 app.use(express.json());
@@ -18,6 +20,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/buses", busRoutes);
 app.use("/api/routes", routeRoutes);
+app.use("/api/bus-routes", busRouteRoutes);
+app.use("/api/students", studentRoutes);
 
 app.get("/", (req, res) => {
   res.json({
