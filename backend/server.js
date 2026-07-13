@@ -10,12 +10,14 @@ const db = require("./db");
 const app = express();
 
 const busRoutes = require("./routes/buses");
+const routeRoutes = require("./routes/routes");
 
 app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/buses", busRoutes);
+app.use("/api/routes", routeRoutes);
 
 app.get("/", (req, res) => {
   res.json({
