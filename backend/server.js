@@ -14,6 +14,7 @@ const routeRoutes = require("./routes/routes");
 const busRouteRoutes = require("./routes/busRoutes");
 const studentRoutes = require("./routes/students");
 const driverRoutes = require("./routes/drivers");
+const scheduleRoutes = require("./routes/schedules");
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use("/api/routes", routeRoutes);
 app.use("/api/bus-routes", busRouteRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/drivers", driverRoutes);
+app.use("/api/schedules", scheduleRoutes);
 
 app.get("/", (req, res) => {
   res.json({
