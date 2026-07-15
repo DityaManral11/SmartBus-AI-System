@@ -284,3 +284,174 @@ exports.deleteBus = (req, res) => {
     });
   });
 };
+
+// ================= ASSIGN DRIVER TO BUS =================
+exports.assignDriver = (req, res) => {
+  const { id } = req.params;
+  const { driver_id } = req.body;
+
+  if (!driver_id) {
+    return res.status(400).json({
+      success: false,
+      message: "Driver ID is required",
+    });
+  }
+
+  // Check if driver exists
+  db.query(
+    "SELECT id FROM drivers WHERE id = ?",
+    [driver_id],
+    (err, driverResult) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Database error",
+        });
+      }
+
+      if (driverResult.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Driver not found",
+        });
+      }
+
+      // Check if driver already assigned to another bus
+      db.query(
+        "SELECT id, bus_number FROM buses WHERE driver_id = ? AND id != ?",
+        [driver_id, id],
+        (err2, busResult) => {
+          if (err2) {
+            return res.status(500).json({
+              success: false,
+              message: "Database error",
+            });
+          }
+
+          if (busResult.length > 0) {
+            return res.status(409).json({
+              success: false,
+              message: "Driver is already assigned to another bus",
+            });
+          }
+
+          db.query(
+            "UPDATE buses SET driver_id = ? WHERE id = ?",
+            [driver_id, id],
+            (err3, result) => {
+              if (err3) {
+                return res.status(500).json({
+                  success: false,
+                  message: "Could not assign driver",
+                });
+              }
+
+              if (result.affectedRows === 0) {
+                return res.status(404).json({
+                  success: false,
+                  message: "Bus not found",
+                });
+              }
+
+              res.status(200).json({
+                success: true,
+                message: "Driver assigned successfully",
+              });
+            }
+          );
+        }
+      );
+    }
+  );
+};
+
+// ================= GET ASSIGNED DRIVER =================
+exports.getAssignedDriver = (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    SELECT
+      b.id AS bus_id,
+      b.bus_number,
+      b.bus_name,
+
+      d.id AS driver_id,
+      d.license_number,
+      d.experience_years,
+      d.total_trips,
+      d.total_distance,
+      d.rating,
+
+      u.full_name AS driver_name,
+      u.email AS driver_email,
+      u.phone AS driver_phone,
+      u.status AS driver_status
+
+    FROM buses b
+    LEFT JOIN drivers d ON b.driver_id = d.id
+    LEFT JOIN users u ON d.user_id = u.id
+    WHERE b.id = ?
+  `;
+
+  db.query(query, [id], (err, results) => {
+    if (err) {
+      console.error("Get assigned driver error:", err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Could not fetch assigned driver",
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Bus not found",
+      });
+    }
+
+    if (!results[0].driver_id) {
+      return res.status(404).json({
+        success: false,
+        message: "No driver is assigned to this bus",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      assignment: results[0],
+    });
+  });
+};
+
+// ================= UNASSIGN DRIVER =================
+exports.unassignDriver = (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    "UPDATE buses SET driver_id = NULL WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.error("Unassign driver error:", err);
+
+        return res.status(500).json({
+          success: false,
+          message: "Could not unassign driver",
+        });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Bus not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Driver unassigned successfully",
+      });
+    }
+  );
+};
