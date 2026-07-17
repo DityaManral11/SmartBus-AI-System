@@ -18,6 +18,12 @@ const scheduleRoutes = require("./routes/schedules");
 const studentBusRoutes = require("./routes/studentBus");
 const routeStopRoutes = require("./routes/routeStops");
 const attendanceRoutes = require("./routes/attendance");
+const busLocationRoutes = require("./routes/busLocation");
+const notificationRoutes = require("./routes/notifications");
+const adminDashboardRoutes = require("./routes/adminDashboard");
+const driverDashboardRoutes = require("./routes/driverDashboard");
+const studentDashboardRoutes = require("./routes/studentDashboard");
+const reportRoutes = require("./routes/reports");
 
 app.use(cors());
 app.use(express.json());
@@ -32,11 +38,36 @@ app.use("/api/drivers", driverRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/route-stops", routeStopRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/bus-locations", busLocationRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/admin/dashboard", adminDashboardRoutes);
+app.use("/api/driver/dashboard", driverDashboardRoutes);
+app.use("/api/student/dashboard", studentDashboardRoutes);
+app.use("/api/reports", reportRoutes);
+
 
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "SmartBus backend is running",
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API route not found",
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
   });
 });
 
