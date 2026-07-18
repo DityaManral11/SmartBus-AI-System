@@ -165,6 +165,7 @@ exports.registerDriver = async (req, res) => {
     email,
     phone,
     license_number,
+    experience_years = 0,
     password,
     confirm_password,
   } = req.body;
@@ -187,6 +188,15 @@ exports.registerDriver = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: "Passwords do not match",
+    });
+  }
+
+  const experience = Number(experience_years);
+
+  if (!Number.isInteger(experience) || experience < 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Experience years must be a non-negative whole number",
     });
   }
 
@@ -224,7 +234,7 @@ exports.registerDriver = async (req, res) => {
 
         db.query(
           userQuery,
-          [full_name, email, phone, hashedPassword],
+          [full_name.trim(), email.trim(), phone.trim(), hashedPassword],
           (userError, userResult) => {
             if (userError) {
               return db.rollback(() => {
@@ -237,13 +247,17 @@ exports.registerDriver = async (req, res) => {
 
             const driverQuery = `
               INSERT INTO drivers
-              (user_id, license_number)
-              VALUES (?, ?)
+              (user_id, license_number, experience_years)
+              VALUES (?, ?, ?)
             `;
 
             db.query(
               driverQuery,
-              [userResult.insertId, license_number],
+              [
+                userResult.insertId,
+                license_number.trim(),
+                experience,
+              ],
               (driverError) => {
                 if (driverError) {
                   return db.rollback(() => {
@@ -262,7 +276,8 @@ exports.registerDriver = async (req, res) => {
                     return db.rollback(() => {
                       res.status(500).json({
                         success: false,
-                        message: "Registration could not be completed",
+                        message:
+                          "Registration could not be completed",
                       });
                     });
                   }

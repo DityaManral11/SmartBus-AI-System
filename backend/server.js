@@ -24,6 +24,7 @@ const adminDashboardRoutes = require("./routes/adminDashboard");
 const driverDashboardRoutes = require("./routes/driverDashboard");
 const studentDashboardRoutes = require("./routes/studentDashboard");
 const reportRoutes = require("./routes/reports");
+const adminSettingsRoutes = require("./routes/adminSettings");
 
 app.use(cors());
 app.use(express.json());
@@ -38,12 +39,13 @@ app.use("/api/drivers", driverRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/route-stops", routeStopRoutes);
 app.use("/api/attendance", attendanceRoutes);
-app.use("/api/bus-locations", busLocationRoutes);
+app.use("/api/bus-location", busLocationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 app.use("/api/driver/dashboard", driverDashboardRoutes);
 app.use("/api/student/dashboard", studentDashboardRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin/settings", adminSettingsRoutes);
 
 
 app.get("/", (req, res) => {

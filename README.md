@@ -105,12 +105,6 @@ SmartBus-AI
 
 # ⚙️ Installation
 
-## Clone Repository
-
-```bash
-git clone <repository-url>
-```
-
 ## Backend
 
 ```bash
@@ -167,4 +161,4 @@ ADMIN_SECRET_KEY=your_secret
 
 # 👩‍💻 Developed By
 
-**Ditya Manral**
+DITYA MANRAL

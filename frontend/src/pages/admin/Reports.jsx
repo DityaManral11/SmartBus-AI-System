@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import api from "../../services/api";
 
 export default function Reports() {
 
@@ -19,164 +20,179 @@ export default function Reports() {
     const [students, setStudents] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [buses, setBuses] = useState([]);
+    const [routes, setRoutes] = useState([]);
     const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    useEffect(() => {
+    const getArrayFromResponse = (response, keys = []) => {
 
-        const users =
-            JSON.parse(localStorage.getItem("users")) || [];
+        const data = response?.data;
 
-        const driversData =
-            JSON.parse(localStorage.getItem("drivers")) || [];
+        if (Array.isArray(data)) return data;
 
-        const busesData =
-            JSON.parse(localStorage.getItem("buses")) || [];
+        for (const key of keys) {
 
-        const routes = [
-            ...new Set(
-                busesData
-                    .map((b) => b.route)
-                    .filter(Boolean)
-            ),
-        ];
+            if (Array.isArray(data?.[key])) {
 
-        const studentsData =
-            users.filter(
-                (u) => u.role === "student"
-            );
+                return data[key];
 
-        setStudents(studentsData);
-
-        setDrivers(driversData);
-
-        setBuses(busesData);
-
-        const savedReports =
-            JSON.parse(
-                localStorage.getItem("reports")
-            );
-
-        if (savedReports) {
-
-            setReports(savedReports);
-
-        } else {
-
-            const defaultReports = [
-
-                {
-                    id: 1,
-                    name: "Students Report",
-                    category: "Student",
-                    type: "PDF",
-                    total: studentsData.length,
-                    date: new Date().toLocaleDateString(),
-                    status: "Ready",
-                },
-
-                {
-                    id: 2,
-                    name: "Drivers Report",
-                    category: "Driver",
-                    type: "PDF",
-                    total: driversData.length,
-                    date: new Date().toLocaleDateString(),
-                    status: "Ready",
-                },
-
-                {
-                    id: 3,
-                    name: "Buses Report",
-                    category: "Bus",
-                    type: "PDF",
-                    total: busesData.length,
-                    date: new Date().toLocaleDateString(),
-                    status: "Ready",
-                },
-
-                {
-                    id: 4,
-                    name: "Routes Report",
-                    category: "Route",
-                    type: "PDF",
-                    total: routes.length,
-                    date: new Date().toLocaleDateString(),
-                    status: "Ready",
-                },
-
-            ];
-
-            setReports(defaultReports);
-
-            localStorage.setItem(
-                "reports",
-                JSON.stringify(defaultReports)
-            );
+            }
 
         }
 
+        if (Array.isArray(data?.data)) return data.data;
+
+        if (Array.isArray(data?.report)) return data.report;
+
+        return [];
+
+    };
+
+    const createReports = (
+        studentsData,
+        driversData,
+        busesData,
+        routesData
+    ) => [
+
+        {
+            id: 1,
+            name: "Students Report",
+            category: "Student",
+            type: "PDF",
+            total: studentsData.length,
+            date: new Date().toLocaleDateString(),
+            status: "Ready",
+        },
+
+        {
+            id: 2,
+            name: "Drivers Report",
+            category: "Driver",
+            type: "PDF",
+            total: driversData.length,
+            date: new Date().toLocaleDateString(),
+            status: "Ready",
+        },
+
+        {
+            id: 3,
+            name: "Buses Report",
+            category: "Bus",
+            type: "PDF",
+            total: busesData.length,
+            date: new Date().toLocaleDateString(),
+            status: "Ready",
+        },
+
+        {
+            id: 4,
+            name: "Routes Report",
+            category: "Route",
+            type: "PDF",
+            total: routesData.length,
+            date: new Date().toLocaleDateString(),
+            status: "Ready",
+        },
+
+    ];
+
+    const fetchReportData = async () => {
+
+        try {
+
+            setLoading(true);
+
+            setError("");
+
+            const [
+                studentsResponse,
+                driversResponse,
+                busesResponse,
+                routesResponse,
+            ] = await Promise.all([
+
+                api.get("/students"),
+
+                api.get("/drivers"),
+
+                api.get("/buses"),
+
+                api.get("/routes"),
+
+            ]);
+
+            const studentsData =
+                getArrayFromResponse(
+                    studentsResponse,
+                    ["students", "results"]
+                );
+
+            const driversData =
+                getArrayFromResponse(
+                    driversResponse,
+                    ["drivers", "results"]
+                );
+
+            const busesData =
+                getArrayFromResponse(
+                    busesResponse,
+                    ["buses", "results"]
+                );
+
+            const routesData =
+                getArrayFromResponse(
+                    routesResponse,
+                    ["routes", "results"]
+                );
+
+            setStudents(studentsData);
+
+            setDrivers(driversData);
+
+            setBuses(busesData);
+
+            setRoutes(routesData);
+
+            setReports(
+                createReports(
+                    studentsData,
+                    driversData,
+                    busesData,
+                    routesData
+                )
+            );
+
+        } catch (fetchError) {
+
+            console.error(
+                "Fetch report data error:",
+                fetchError
+            );
+
+            setError(
+                fetchError.response?.data?.message ||
+                "Could not load report data."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    useEffect(() => {
+
+        fetchReportData();
+
     }, []);
 
-    const handleGenerateReport = () => {
+    const handleGenerateReport = async () => {
 
-        const routes = [
-            ...new Set(
-                buses
-                    .map((b) => b.route)
-                    .filter(Boolean)
-            ),
-        ];
-
-        const newReports = [
-
-            {
-                id: Date.now() + 1,
-                name: "Students Report",
-                category: "Student",
-                type: "PDF",
-                total: students.length,
-                date: new Date().toLocaleDateString(),
-                status: "Ready",
-            },
-
-            {
-                id: Date.now() + 2,
-                name: "Drivers Report",
-                category: "Driver",
-                type: "PDF",
-                total: drivers.length,
-                date: new Date().toLocaleDateString(),
-                status: "Ready",
-            },
-
-            {
-                id: Date.now() + 3,
-                name: "Buses Report",
-                category: "Bus",
-                type: "PDF",
-                total: buses.length,
-                date: new Date().toLocaleDateString(),
-                status: "Ready",
-            },
-
-            {
-                id: Date.now() + 4,
-                name: "Routes Report",
-                category: "Route",
-                type: "PDF",
-                total: routes.length,
-                date: new Date().toLocaleDateString(),
-                status: "Ready",
-            },
-
-        ];
-
-        setReports(newReports);
-
-        localStorage.setItem(
-            "reports",
-            JSON.stringify(newReports)
-        );
+        await fetchReportData();
 
     };
 
@@ -189,11 +205,6 @@ export default function Reports() {
             reports.filter((report) => report.id !== id);
 
         setReports(updated);
-
-        localStorage.setItem(
-            "reports",
-            JSON.stringify(updated)
-        );
 
     };
 
@@ -248,16 +259,33 @@ Status : ${report.status}`
                 head: [[
                     "Name",
                     "Email",
-                    "Phone"
+                    "Phone",
+                    "Roll No",
+                    "Course",
+                    "Semester",
+                    "Status"
                 ]],
 
                 body: students.map((student) => [
 
-                    student.name,
+                    student.full_name ||
+                    student.student_name ||
+                    student.name ||
+                    "-",
 
-                    student.email,
+                    student.email || "-",
 
                     student.phone || "-",
+
+                    student.roll_number ||
+                    student.rollNo ||
+                    "-",
+
+                    student.course || "-",
+
+                    student.semester ?? "-",
+
+                    student.status || "active",
 
                 ]),
 
@@ -288,13 +316,18 @@ Status : ${report.status}`
 
                 body: drivers.map((driver) => [
 
-                    driver.name,
+                    driver.full_name ||
+                    driver.driver_name ||
+                    driver.name ||
+                    "-",
 
-                    driver.email,
+                    driver.email || "-",
 
                     driver.phone || "-",
 
-                    driver.license || "-",
+                    driver.license_number ||
+                    driver.license ||
+                    "-",
 
                 ]),
 
@@ -318,20 +351,28 @@ Status : ${report.status}`
 
                 head: [[
                     "Bus No",
-                    "Driver",
-                    "Route",
+                    "Bus Name",
+                    "Registration",
+                    "Capacity",
                     "Status"
                 ]],
 
                 body: buses.map((bus) => [
 
-                    bus.busNo,
+                    bus.bus_number ||
+                    bus.busNo ||
+                    "-",
 
-                    bus.driver,
+                    bus.bus_name ||
+                    bus.name ||
+                    "-",
 
-                    bus.route,
+                    bus.registration_number ||
+                    "-",
 
-                    bus.status,
+                    bus.capacity ?? "-",
+
+                    bus.status || "-",
 
                 ]),
 
@@ -349,54 +390,36 @@ Status : ${report.status}`
 
         if (report.category === "Route") {
 
-            const routes = [];
-
-            buses.forEach((bus) => {
-
-                if (!bus.route) return;
-
-                const existing = routes.find(
-                    (r) => r.route === bus.route
-                );
-
-                if (existing) {
-
-                    existing.total++;
-
-                } else {
-
-                    routes.push({
-
-                        route: bus.route,
-
-                        pickupPoints:
-                            bus.pickupPoints || "-",
-
-                        total: 1,
-
-                    });
-
-                }
-
-            });
-
             autoTable(doc, {
 
                 startY: 40,
 
                 head: [[
                     "Route",
-                    "Pickup Points",
-                    "Assigned Buses"
+                    "Source",
+                    "Destination",
+                    "Distance",
+                    "Estimated Time",
+                    "Status"
                 ]],
 
                 body: routes.map((route) => [
 
-                    route.route,
+                    route.route_name ||
+                    route.name ||
+                    "-",
 
-                    route.pickupPoints,
+                    route.source || "-",
 
-                    route.total,
+                    route.destination || "-",
+
+                    route.distance
+                        ? `${route.distance} km`
+                        : "-",
+
+                    route.estimated_time || "-",
+
+                    route.status || "-",
 
                 ]),
 
@@ -498,7 +521,9 @@ Status : ${report.status}`
 
                             onClick={handleGenerateReport}
 
-                            className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+                            disabled={loading}
+
+                            className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
 
                         >
 
@@ -506,7 +531,9 @@ Status : ${report.status}`
 
                                 <Plus size={18} />
 
-                                Generate Report
+                                {loading
+                                    ? "Loading..."
+                                    : "Generate Report"}
 
                             </div>
 
@@ -529,6 +556,16 @@ Status : ${report.status}`
                 </div>
 
             </div>
+
+            {error && (
+
+                <div className="bg-red-100 text-red-700 rounded-2xl p-4">
+
+                    {error}
+
+                </div>
+
+            )}
 
             {/* Stats */}
 

@@ -1,250 +1,190 @@
 import { useEffect, useState } from "react";
+import api from "../services/api";
+
+const emptyDriver = {
+  full_name: "",
+  phone: "",
+  email: "",
+  license_number: "",
+  password: "",
+  confirm_password: "",
+  status: "active",
+  experience_years: 0,
+};
 
 export default function AddDriverModal({
   open,
   setOpen,
-  drivers,
-  setDrivers,
-  buses,
   editDriver,
   setEditDriver,
+  onSaved,
 }) {
-  const [driver, setDriver] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    licenseNo: "",
-    password: "",
-    bus: "",
-    status: "",
-  });
+  const [driver, setDriver] = useState(emptyDriver);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (editDriver) {
-      setDriver(editDriver);
-    } else {
       setDriver({
-        name: "",
-        phone: "",
-        email: "",
-        status: "",
+        full_name: editDriver.full_name || "",
+        phone: editDriver.phone || "",
+        email: editDriver.email || "",
+        license_number: editDriver.license_number || "",
+        password: "",
+        confirm_password: "",
+        status: editDriver.status || "active",
+        experience_years: editDriver.experience_years || 0,
       });
+    } else {
+      setDriver(emptyDriver);
     }
+
+    setError("");
   }, [editDriver, open]);
 
-  const handleSave = () => {
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setDriver((previousDriver) => ({
+      ...previousDriver,
+      [name]: value,
+    }));
+  };
+
+  const handleClose = () => {
+    if (loading) return;
+
+    setOpen(false);
+    setEditDriver(null);
+    setDriver(emptyDriver);
+    setError("");
+  };
+
+  const handleSave = async () => {
     if (
-      !driver.name ||
-      !driver.phone ||
-      !driver.email ||
-      !driver.licenseNo ||
-      !driver.password ||
-      !driver.status
+      !driver.full_name.trim() ||
+      !driver.phone.trim() ||
+      !driver.email.trim() ||
+      !driver.license_number.trim()
     ) {
-      alert("Please fill all fields.");
+      setError("Please fill in all required fields.");
       return;
     }
 
-    let updatedDrivers;
+    const experience = Number(driver.experience_years);
 
-    const users =
-      JSON.parse(localStorage.getItem("users")) || [];
-
-    if (editDriver) {
-      updatedDrivers = drivers.map((d) =>
-        d.email === editDriver.email ? driver : d
-      );
-
-      alert("Driver Updated Successfully");
-    } else {
-      updatedDrivers = [
-        ...drivers,
-        {
-          id: Date.now(),
-          ...driver,
-        },
-      ];
-
-      alert("Driver Added Successfully");
+    if (!Number.isInteger(experience) || experience < 0) {
+      setError("Experience years must be a non-negative whole number.");
+      return;
     }
 
-    setDrivers(updatedDrivers);
+    if (!editDriver) {
+      if (!driver.password || !driver.confirm_password) {
+        setError("Password and confirm password are required.");
+        return;
+      }
 
-    localStorage.setItem(
-      "drivers",
-      JSON.stringify(updatedDrivers)
-    );
-
-    // ----------------------
-    // Users ko bhi update karo
-    // ----------------------
-
-    let updatedUsers = [...users];
-
-    if (editDriver) {
-      updatedUsers = users.map((u) =>
-        u.email === editDriver.email
-          ? {
-            ...u,
-            name: driver.name,
-            phone: driver.phone,
-            email: driver.email,
-            licenseNo: driver.licenseNo,
-            password: driver.password,
-            bus: driver.bus,
-            status: driver.status,
-          }
-          : u
-      );
-    } else {
-      const alreadyExists = users.some(
-        (u) => u.email === driver.email
-      );
-
-      if (!alreadyExists) {
-        updatedUsers.push({
-          ...driver,
-          role: "driver",
-        });
+      if (driver.password !== driver.confirm_password) {
+        setError("Passwords do not match.");
+        return;
       }
     }
 
-    localStorage.setItem(
-      "users",
-      JSON.stringify(updatedUsers)
-    );
+    try {
+      setLoading(true);
+      setError("");
 
-    setDriver({
-      name: "",
-      phone: "",
-      email: "",
-      bus: "",
-      status: "",
-    });
+      if (editDriver) {
+        const payload = {
+          full_name: driver.full_name.trim(),
+          email: driver.email.trim(),
+          phone: driver.phone.trim(),
+          status: driver.status,
+          license_number: driver.license_number.trim(),
+          experience_years: experience,
+          total_trips: Number(editDriver.total_trips || 0),
+          total_distance: Number(editDriver.total_distance || 0),
+          rating: Number(editDriver.rating || 0),
+        };
 
-    setEditDriver(null);
-    setOpen(false);
+        const response = await api.put(`/drivers/${editDriver.id}`, payload);
+        alert(response.data?.message || "Driver updated successfully.");
+      } else {
+        const payload = {
+          full_name: driver.full_name.trim(),
+          email: driver.email.trim(),
+          phone: driver.phone.trim(),
+          password: driver.password,
+          confirm_password: driver.confirm_password,
+          license_number: driver.license_number.trim(),
+          experience_years: Number(driver.experience_years),
+        };
+
+        const response = await api.post("/auth/driver/register", payload);
+        alert(response.data?.message || "Driver added successfully.");
+      }
+
+      await onSaved();
+      handleClose();
+    } catch (error) {
+      console.error("Save driver error:", error);
+      setError(
+        error.response?.data?.message ||
+          "Could not save driver. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-
-      <div className="bg-white rounded-3xl p-8 w-[520px] shadow-2xl">
-
-        <h2 className="text-3xl font-bold mb-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-[520px] overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl">
+        <h2 className="mb-6 text-3xl font-bold">
           {editDriver ? "Edit Driver" : "Add Driver"}
         </h2>
 
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-4">
+          <input type="text" name="full_name" placeholder="Driver Name" value={driver.full_name} onChange={handleChange} className="w-full rounded-xl border p-3" />
+          <input type="text" name="phone" placeholder="Phone Number" value={driver.phone} onChange={handleChange} className="w-full rounded-xl border p-3" />
+          <input type="email" name="email" placeholder="Email Address" value={driver.email} onChange={handleChange} className="w-full rounded-xl border p-3" />
+          <input type="text" name="license_number" placeholder="License Number" value={driver.license_number} onChange={handleChange} className="w-full rounded-xl border p-3" />
+          <input type="number" name="experience_years" placeholder="Experience in Years" min="0" step="1" value={driver.experience_years} onChange={handleChange} className="w-full rounded-xl border p-3" />
 
-          <input
-            type="text"
-            placeholder="Driver Name"
-            value={driver.name}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                name: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          />
+          {!editDriver && (
+            <>
+              <input type="password" name="password" placeholder="Password" value={driver.password} onChange={handleChange} className="w-full rounded-xl border p-3" />
+              <input type="password" name="confirm_password" placeholder="Confirm Password" value={driver.confirm_password} onChange={handleChange} className="w-full rounded-xl border p-3" />
+            </>
+          )}
 
-          <input
-            type="text"
-            placeholder="Phone"
-            value={driver.phone}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                phone: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            value={driver.email}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                email: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          />
-
-          <input
-            type="text"
-            placeholder="License Number"
-            value={driver.licenseNo}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                licenseNo: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            value={driver.password}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                password: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          />
-
-          <select
-            value={driver.status}
-            onChange={(e) =>
-              setDriver({
-                ...driver,
-                status: e.target.value,
-              })
-            }
-            className="w-full border rounded-xl p-3"
-          >
-            <option value="">Select Status</option>
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-
+          {editDriver && (
+            <select name="status" value={driver.status} onChange={handleChange} className="w-full rounded-xl border p-3">
+              <option value="active">Active</option>
+              <option value="on_leave">On Leave</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          )}
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
-
-          <button
-            onClick={() => {
-              setOpen(false);
-              setEditDriver(null);
-            }}
-            className="px-5 py-3 rounded-xl bg-gray-200"
-          >
+        <div className="mt-8 flex justify-end gap-4">
+          <button type="button" onClick={handleClose} disabled={loading} className="rounded-xl bg-gray-200 px-5 py-3 disabled:opacity-60">
             Cancel
           </button>
 
-          <button
-            onClick={handleSave}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
-          >
-            {editDriver ? "Update" : "Save"}
+          <button type="button" onClick={handleSave} disabled={loading} className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-60">
+            {loading ? "Saving..." : editDriver ? "Update" : "Save"}
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

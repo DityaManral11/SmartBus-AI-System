@@ -1,3 +1,4 @@
+import api from "../../services/api";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -17,7 +18,7 @@ export default function Register() {
 
   const defaultRole = location.state?.role || "";
 
-  const [role, setRole] = useState(defaultRole);
+  const [role] = useState(defaultRole);
 
   const navigate = useNavigate();
 
@@ -33,82 +34,91 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-  const handleRegister = () => {
-    if (!name || !email || !phone || !password || !confirmPassword) {
-      alert("Please fill all fields.");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleRegister = async () => {
+    if (!role) {
+      setError("Please select a role.");
       return;
     }
 
-    if (role === "student" && (!rollNo || !semester)) {
-      alert("Please fill Roll Number and Semester.");
+    if (!name.trim() || !email.trim() || !phone.trim()) {
+      setError("Please fill all required fields.");
       return;
     }
 
-    if (role === "driver" && !licenseNo) {
-      alert("Please enter License Number.");
+    if (role === "student" && (!rollNo.trim() || !semester)) {
+      setError("Please fill Roll Number and Semester.");
       return;
     }
 
-    if (role === "admin") {
-      if (adminKey !== "ONLYADMINS") {
-        alert("Invalid Admin Secret Key!");
-        return;
-      }
+    if (role === "driver" && !licenseNo.trim()) {
+      setError("Please enter License Number.");
+      return;
+    }
+
+    if (role === "admin" && !adminKey.trim()) {
+      setError("Please enter Admin Secret Key.");
+      return;
+    }
+
+    if (!password || !confirmPassword) {
+      setError("Password and confirm password are required.");
+      return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
 
-    const user = {
-      name,
-      email,
-      phone,
-      rollNo,
-      semester,
-      licenseNo,
-      password,
-      role,
-    };
+    try {
+      setLoading(true);
+      setError("");
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+      const payload = {
+        full_name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        password,
+        confirm_password: confirmPassword,
+      };
 
-    users.push(user);
+      if (role === "student") {
+        payload.roll_number = rollNo.trim();
+        payload.semester = semester;
+      }
 
-    localStorage.setItem("users", JSON.stringify(users));
+      if (role === "driver") {
+        payload.license_number = licenseNo.trim();
+      }
 
-    if (role === "driver") {
-      const drivers =
-        JSON.parse(localStorage.getItem("drivers")) || [];
+      if (role === "admin") {
+        payload.secret_key = adminKey.trim();
+      }
 
-      const alreadyExists = drivers.some(
-        (driver) => driver.email === email
+      const response = await api.post(
+        `/auth/${role}/register`,
+        payload
       );
 
-      if (!alreadyExists) {
-        drivers.push({
-          name,
-          email,
-          phone,
-          licenseNo,
-          bus: "",
-          status: "Active",
-        });
+      alert(
+        response.data?.message || "Registration successful!"
+      );
 
-        localStorage.setItem(
-          "drivers",
-          JSON.stringify(drivers)
-        );
-      }
+      navigate(`/login/${role}`);
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    alert("Registration Successful!");
-
-    navigate(`/login/${role}`);
   };
-
-
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-900 via-blue-700 to-cyan-500">
@@ -299,11 +309,18 @@ export default function Register() {
 
           </div>
 
+          {error && (
+            <div className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-red-700">
+              {error}
+            </div>
+         )}
+
           <button
             onClick={handleRegister}
-            className="w-full py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-500 hover:scale-105 transition"
+            disabled={loading}
+            className="w-full py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-500 hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
 
           <p className="text-center text-white mt-8">
