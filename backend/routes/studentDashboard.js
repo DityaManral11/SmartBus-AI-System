@@ -5,6 +5,10 @@ const {
   getStudentDashboard,
 } = require("../controllers/students/dashboardController");
 
-router.get("/:studentId", getStudentDashboard);
+const {
+  verifyToken,
+} = require("../middleware/authMiddleware");
+
+router.get("/:studentId", verifyToken, getStudentDashboard);
 
 module.exports = router;
