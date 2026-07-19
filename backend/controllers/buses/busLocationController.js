@@ -52,7 +52,6 @@ exports.updateBusLocation = (req, res) => {
     });
   }
 
-  // First verify that the bus exists
   db.query(
     "SELECT id FROM buses WHERE id = ?",
     [numericBusId],
@@ -73,13 +72,15 @@ exports.updateBusLocation = (req, res) => {
         });
       }
 
-      // Check whether a location record already exists
       db.query(
         "SELECT id FROM bus_locations WHERE bus_id = ?",
         [numericBusId],
-        (checkError, locationResults) => {
-          if (checkError) {
-            console.error("Check bus location error:", checkError);
+        (locationError, locationResults) => {
+          if (locationError) {
+            console.error(
+              "Check existing bus location error:",
+              locationError
+            );
 
             return res.status(500).json({
               success: false,
@@ -87,19 +88,58 @@ exports.updateBusLocation = (req, res) => {
             });
           }
 
-          if (locationResults.length > 0) {
-            const updateQuery = `
-              UPDATE bus_locations
-              SET
-                latitude = ?,
-                longitude = ?,
-                speed = ?,
-                updated_at = CURRENT_TIMESTAMP
-              WHERE bus_id = ?
-            `;
-
+          const saveBusCoordinates = (statusCode, locationId = null) => {
             db.query(
-              updateQuery,
+              `
+                UPDATE buses
+                SET
+                  current_latitude = ?,
+                  current_longitude = ?
+                WHERE id = ?
+              `,
+              [
+                numericLatitude,
+                numericLongitude,
+                numericBusId,
+              ],
+              (busUpdateError) => {
+                if (busUpdateError) {
+                  console.error(
+                    "Update bus coordinates error:",
+                    busUpdateError
+                  );
+                }
+
+                return res.status(statusCode).json({
+                  success: true,
+                  message:
+                    statusCode === 201
+                      ? "Bus location saved successfully"
+                      : "Bus location updated successfully",
+                  location: {
+                    id: locationId,
+                    bus_id: numericBusId,
+                    latitude: numericLatitude,
+                    longitude: numericLongitude,
+                    speed: numericSpeed,
+                    updated_at: new Date(),
+                  },
+                });
+              }
+            );
+          };
+
+          if (locationResults.length > 0) {
+            db.query(
+              `
+                UPDATE bus_locations
+                SET
+                  latitude = ?,
+                  longitude = ?,
+                  speed = ?,
+                  updated_at = CURRENT_TIMESTAMP
+                WHERE bus_id = ?
+              `,
               [
                 numericLatitude,
                 numericLongitude,
@@ -108,7 +148,10 @@ exports.updateBusLocation = (req, res) => {
               ],
               (updateError) => {
                 if (updateError) {
-                  console.error("Update bus location error:", updateError);
+                  console.error(
+                    "Update bus location error:",
+                    updateError
+                  );
 
                   return res.status(500).json({
                     success: false,
@@ -116,45 +159,24 @@ exports.updateBusLocation = (req, res) => {
                   });
                 }
 
-                // Keep the current coordinates in the buses table updated too
-                db.query(
-                  `
-                    UPDATE buses
-                    SET current_latitude = ?, current_longitude = ?
-                    WHERE id = ?
-                  `,
-                  [numericLatitude, numericLongitude, numericBusId],
-                  (busUpdateError) => {
-                    if (busUpdateError) {
-                      console.error(
-                        "Update bus current coordinates error:",
-                        busUpdateError
-                      );
-                    }
-
-                    return res.status(200).json({
-                      success: true,
-                      message: "Bus location updated successfully",
-                      location: {
-                        bus_id: numericBusId,
-                        latitude: numericLatitude,
-                        longitude: numericLongitude,
-                        speed: numericSpeed,
-                      },
-                    });
-                  }
+                saveBusCoordinates(
+                  200,
+                  locationResults[0].id
                 );
               }
             );
           } else {
-            const insertQuery = `
-              INSERT INTO bus_locations
-                (bus_id, latitude, longitude, speed)
-              VALUES (?, ?, ?, ?)
-            `;
-
             db.query(
-              insertQuery,
+              `
+                INSERT INTO bus_locations
+                (
+                  bus_id,
+                  latitude,
+                  longitude,
+                  speed
+                )
+                VALUES (?, ?, ?, ?)
+              `,
               [
                 numericBusId,
                 numericLatitude,
@@ -163,7 +185,10 @@ exports.updateBusLocation = (req, res) => {
               ],
               (insertError, result) => {
                 if (insertError) {
-                  console.error("Save bus location error:", insertError);
+                  console.error(
+                    "Insert bus location error:",
+                    insertError
+                  );
 
                   return res.status(500).json({
                     success: false,
@@ -171,34 +196,7 @@ exports.updateBusLocation = (req, res) => {
                   });
                 }
 
-                db.query(
-                  `
-                    UPDATE buses
-                    SET current_latitude = ?, current_longitude = ?
-                    WHERE id = ?
-                  `,
-                  [numericLatitude, numericLongitude, numericBusId],
-                  (busUpdateError) => {
-                    if (busUpdateError) {
-                      console.error(
-                        "Update bus current coordinates error:",
-                        busUpdateError
-                      );
-                    }
-
-                    return res.status(201).json({
-                      success: true,
-                      message: "Bus location saved successfully",
-                      location: {
-                        id: result.insertId,
-                        bus_id: numericBusId,
-                        latitude: numericLatitude,
-                        longitude: numericLongitude,
-                        speed: numericSpeed,
-                      },
-                    });
-                  }
-                );
+                saveBusCoordinates(201, result.insertId);
               }
             );
           }
@@ -229,7 +227,11 @@ exports.getAllBusLocations = (req, res) => {
       u.full_name AS driver_name,
       u.phone AS driver_phone,
 
-      br.id AS assignment_id,
+      s.id AS schedule_id,
+      s.departure_time,
+      s.arrival_time,
+      s.status AS schedule_status,
+
       r.id AS route_id,
       r.route_name,
       r.source,
@@ -243,24 +245,31 @@ exports.getAllBusLocations = (req, res) => {
     INNER JOIN buses b
       ON bl.bus_id = b.id
 
+    LEFT JOIN schedules s
+      ON s.id = (
+        SELECT s2.id
+        FROM schedules s2
+        WHERE s2.bus_id = b.id
+          AND s2.status = 'active'
+        ORDER BY s2.id DESC
+        LIMIT 1
+      )
+
     LEFT JOIN drivers d
-      ON b.driver_id = d.id
+      ON s.driver_id = d.id
 
     LEFT JOIN users u
       ON d.user_id = u.id
 
-    LEFT JOIN bus_routes br
-      ON b.id = br.bus_id
-
     LEFT JOIN routes r
-      ON br.route_id = r.id
+      ON s.route_id = r.id
 
     ORDER BY bl.updated_at DESC
   `;
 
   db.query(query, (error, results) => {
     if (error) {
-      console.error("Get bus locations error:", error);
+      console.error("Get all bus locations error:", error);
 
       return res.status(500).json({
         success: false,
@@ -279,6 +288,14 @@ exports.getAllBusLocations = (req, res) => {
 // ================= GET SINGLE BUS LOCATION =================
 exports.getBusLocationById = (req, res) => {
   const { busId } = req.params;
+  const numericBusId = Number(busId);
+
+  if (!Number.isInteger(numericBusId) || numericBusId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Valid Bus ID is required",
+    });
+  }
 
   const query = `
     SELECT
@@ -299,6 +316,11 @@ exports.getBusLocationById = (req, res) => {
       u.full_name AS driver_name,
       u.phone AS driver_phone,
 
+      s.id AS schedule_id,
+      s.departure_time,
+      s.arrival_time,
+      s.status AS schedule_status,
+
       r.id AS route_id,
       r.route_name,
       r.source,
@@ -312,25 +334,33 @@ exports.getBusLocationById = (req, res) => {
     INNER JOIN buses b
       ON bl.bus_id = b.id
 
+    LEFT JOIN schedules s
+      ON s.id = (
+        SELECT s2.id
+        FROM schedules s2
+        WHERE s2.bus_id = b.id
+          AND s2.status = 'active'
+        ORDER BY s2.id DESC
+        LIMIT 1
+      )
+
     LEFT JOIN drivers d
-      ON b.driver_id = d.id
+      ON s.driver_id = d.id
 
     LEFT JOIN users u
       ON d.user_id = u.id
 
-    LEFT JOIN bus_routes br
-      ON b.id = br.bus_id
-
     LEFT JOIN routes r
-      ON br.route_id = r.id
+      ON s.route_id = r.id
 
     WHERE bl.bus_id = ?
+
     LIMIT 1
   `;
 
-  db.query(query, [busId], (error, results) => {
+  db.query(query, [numericBusId], (error, results) => {
     if (error) {
-      console.error("Get single bus location error:", error);
+      console.error("Get bus location error:", error);
 
       return res.status(500).json({
         success: false,

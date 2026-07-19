@@ -12,6 +12,8 @@ import {
   RotateCcw,
   LockKeyhole,
   Loader2,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import api from "../../services/api";
@@ -24,6 +26,8 @@ const defaultSettings = {
   notifications: true,
   gps: true,
   twoFactor: false,
+  darkMode:
+    localStorage.getItem("smartbus_dark_mode") === "true",
 };
 
 const defaultPasswordData = {
@@ -77,6 +81,8 @@ export default function SettingsPage() {
           typeof data.twoFactor === "boolean"
             ? data.twoFactor
             : false,
+        darkMode:
+          localStorage.getItem("smartbus_dark_mode") === "true",
       }));
     } catch (error) {
       console.error(
@@ -106,13 +112,26 @@ export default function SettingsPage() {
       checked,
     } = event.target;
 
+    const finalValue =
+      type === "checkbox" ? checked : value;
+
     setSettings((previousSettings) => ({
       ...previousSettings,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
+      [name]: finalValue,
     }));
+
+    // Apply dark mode instantly
+    if (name === "darkMode") {
+      document.documentElement.classList.toggle(
+        "dark",
+        finalValue
+      );
+
+      localStorage.setItem(
+        "smartbus_dark_mode",
+        String(finalValue)
+      );
+    }
   };
 
   // ================= PASSWORD CHANGE =================
@@ -278,7 +297,7 @@ export default function SettingsPage() {
           className="animate-spin text-cyan-600"
         />
 
-        <p className="text-gray-600 font-semibold">
+        <p className="font-semibold text-gray-600 dark:text-slate-300">
           Loading settings...
         </p>
       </div>
@@ -286,7 +305,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-slate-800 transition-colors dark:text-slate-100">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
         <h1 className="text-4xl font-bold flex items-center gap-3">
@@ -300,7 +319,7 @@ export default function SettingsPage() {
       </div>
 
       {/* School and Admin Information */}
-      <div className="bg-white rounded-3xl shadow-xl p-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl transition-colors dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-2xl font-bold mb-6">
           School Information
         </h2>
@@ -319,7 +338,7 @@ export default function SettingsPage() {
                 name="schoolName"
                 value={settings.schoolName}
                 onChange={handleChange}
-                className="w-full border rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-4 pl-12 pr-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -337,7 +356,7 @@ export default function SettingsPage() {
                 name="adminName"
                 value={settings.adminName}
                 onChange={handleChange}
-                className="w-full border rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-4 pl-12 pr-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -355,7 +374,7 @@ export default function SettingsPage() {
                 name="email"
                 value={settings.email}
                 onChange={handleChange}
-                className="w-full border rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-4 pl-12 pr-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-4 pl-12 pr-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -373,7 +392,7 @@ export default function SettingsPage() {
                 name="phone"
                 value={settings.phone}
                 onChange={handleChange}
-                className="w-full border rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 py-4 pl-12 pr-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -381,13 +400,13 @@ export default function SettingsPage() {
       </div>
 
       {/* System Settings */}
-      <div className="bg-white rounded-3xl shadow-xl p-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl transition-colors dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-2xl font-bold mb-6">
           System Settings
         </h2>
 
         <div className="space-y-5">
-          <div className="flex justify-between items-center border rounded-2xl p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-300 bg-slate-50 p-5 transition-colors dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center gap-3">
               <Bell className="text-blue-600" />
               <span className="font-medium">
@@ -404,7 +423,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="flex justify-between items-center border rounded-2xl p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-300 bg-slate-50 p-5 transition-colors dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center gap-3">
               <Shield className="text-green-600" />
               <span className="font-medium">
@@ -421,7 +440,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="flex justify-between items-center border rounded-2xl p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-300 bg-slate-50 p-5 transition-colors dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center gap-3">
               <Shield className="text-red-600" />
               <span className="font-medium">
@@ -437,11 +456,38 @@ export default function SettingsPage() {
               className="w-5 h-5 accent-red-600 cursor-pointer"
             />
           </div>
+          <div className="flex items-center justify-between rounded-2xl border border-slate-300 bg-slate-50 p-5 transition-colors dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center gap-3">
+              {settings.darkMode ? (
+                <Moon className="text-purple-500" />
+              ) : (
+                <Sun className="text-orange-500" />
+              )}
+
+              <div>
+                <span className="font-medium text-slate-900 dark:text-white">
+                  Dark Mode
+                </span>
+
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Apply dark appearance across SmartBus.
+                </p>
+              </div>
+            </div>
+
+            <input
+              type="checkbox"
+              name="darkMode"
+              checked={settings.darkMode}
+              onChange={handleChange}
+              className="w-5 h-5 accent-purple-600 cursor-pointer"
+            />
+          </div>
         </div>
       </div>
 
       {/* Security */}
-      <div className="bg-white rounded-3xl shadow-xl p-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl transition-colors dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <LockKeyhole className="text-cyan-600" />
           Security
@@ -462,7 +508,7 @@ export default function SettingsPage() {
               onChange={handlePasswordChange}
               placeholder="Enter current password"
               autoComplete="current-password"
-              className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
@@ -478,7 +524,7 @@ export default function SettingsPage() {
               onChange={handlePasswordChange}
               placeholder="Enter new password"
               autoComplete="new-password"
-              className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
@@ -496,7 +542,7 @@ export default function SettingsPage() {
               onChange={handlePasswordChange}
               placeholder="Confirm new password"
               autoComplete="new-password"
-              className="w-full border rounded-2xl px-4 py-4 focus:ring-2 focus:ring-cyan-500 outline-none"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
         </div>

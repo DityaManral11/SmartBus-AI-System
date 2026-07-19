@@ -3,132 +3,530 @@ import {
   TileLayer,
   Marker,
   Popup,
-  Polyline,
+  useMap,
 } from "react-leaflet";
 
 import L from "leaflet";
 
 import {
+  AlertCircle,
   Bus,
   Clock,
-  Users,
-  Navigation,
-  RotateCw,
+  LocateFixed,
   MapPinned,
+  Navigation,
+  RefreshCw,
+  Radio,
+  Square,
+  Users,
 } from "lucide-react";
 
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
 
-const busPosition = [28.6139, 77.2090];
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-const route = [
-  [28.6125, 77.2055],
-  [28.6132, 77.2070],
-  [28.6139, 77.2090],
-  [28.6150, 77.2110],
-  [28.6170, 77.2140],
-];
+import api from "../../services/api";
+
+const DEFAULT_POSITION = [28.6139, 77.209];
 
 const busIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
+  iconUrl:
+    "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
   iconSize: [42, 42],
   iconAnchor: [21, 42],
+  popupAnchor: [0, -42],
 });
 
-const stopIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
-});
+function getStoredUser() {
+  try {
+    return (
+      JSON.parse(
+        localStorage.getItem("currentUser") || "null"
+      ) ||
+      JSON.parse(localStorage.getItem("user") || "null") ||
+      {}
+    );
+  } catch (error) {
+    console.error("Could not read logged-in user:", error);
+    return {};
+  }
+}
 
-export default function LiveLocation() {
-  const [bus, setBus] = useState(null);
-  const [driver, setDriver] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [locationEnabled, setLocationEnabled] = useState(true);
+function formatTime(time) {
+  if (!time) return "N/A";
 
-  const currentUser =
-    JSON.parse(localStorage.getItem("currentUser")) || {};
+  const parts = String(time).split(":");
 
-  const loadData = () => {
-    const buses =
-      JSON.parse(localStorage.getItem("buses")) || [];
+  if (parts.length >= 2) {
+    const date = new Date();
 
-    const users =
-      JSON.parse(localStorage.getItem("users")) || [];
-
-    const assignedBus = buses.find(
-      (b) => b.driver === currentUser.email
+    date.setHours(
+      Number(parts[0]),
+      Number(parts[1]),
+      0,
+      0
     );
 
-    setBus(assignedBus);
+    return date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
 
-    const driverData = users.find(
-      (u) => u.email === currentUser.email
-    );
+  return String(time);
+}
 
-    setDriver(driverData);
+function formatUpdatedTime(value) {
+  if (!value) return "Not updated yet";
 
-    const settings =
-      JSON.parse(localStorage.getItem("driverSettings")) || {};
+  const date = new Date(value);
 
-    setLocationEnabled(
-      settings[currentUser.email]?.location ?? true
-    );
-  };
+  if (Number.isNaN(date.getTime())) {
+    return "Not updated yet";
+  }
+
+  return date.toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function MapUpdater({ position }) {
+  const map = useMap();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (position) {
+      map.setView(position, 15);
+    }
+  }, [map, position]);
 
-  const handleRefresh = () => {
-    setLoading(true);
+  return null;
+}
 
-    loadData();
+export default function LiveLocation() {
+  const [driverId, setDriverId] = useState(null);
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 600);
+  const [bus, setBus] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [schedule, setSchedule] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [location, setLocation] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] =
+    useState("");
+
+  const watchIdRef = useRef(null);
+
+  const getDriverId = async () => {
+    const currentUser = getStoredUser();
+
+    if (!currentUser?.id && !currentUser?.email) {
+      throw new Error(
+        "Logged-in driver details were not found. Please log in again."
+      );
+    }
+
+    if (currentUser.driver_id || currentUser.driverId) {
+      return (
+        currentUser.driver_id || currentUser.driverId
+      );
+    }
+
+    const response = await api.get("/drivers");
+
+    const drivers =
+      response.data?.drivers ||
+      response.data?.data ||
+      (Array.isArray(response.data)
+        ? response.data
+        : []);
+
+    const matchedDriver = drivers.find((driver) => {
+      const userIdMatches =
+        currentUser.id &&
+        Number(driver.user_id) ===
+          Number(currentUser.id);
+
+      const emailMatches =
+        currentUser.email &&
+        driver.email &&
+        driver.email.toLowerCase() ===
+          currentUser.email.toLowerCase();
+
+      return userIdMatches || emailMatches;
+    });
+
+    if (!matchedDriver) {
+      throw new Error(
+        "Your driver profile was not found."
+      );
+    }
+
+    return matchedDriver.id;
   };
 
-  const pickupPoints =
-    bus?.pickupPoints
-      ?.split(",")
-      .map((item) => item.trim()) || [];
+  const fetchLiveLocationData = useCallback(
+    async (showMainLoader = false) => {
+      try {
+        if (showMainLoader) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
 
-  const studentCount =
-    JSON.parse(localStorage.getItem("users") || "[]").filter(
-      (u) =>
-        u.role === "student" &&
-        u.bus === bus?.busNo &&
-        u.status === "Present"
-    ).length;
+        setError("");
+
+        const resolvedDriverId = await getDriverId();
+
+        setDriverId(resolvedDriverId);
+
+        const studentsResponse = await api.get(
+          `/student-bus/driver/${resolvedDriverId}`
+        );
+
+        if (!studentsResponse.data?.success) {
+          throw new Error(
+            studentsResponse.data?.message ||
+              "Could not load driver bus information."
+          );
+        }
+
+        const busData =
+          studentsResponse.data.bus || null;
+
+        setBus(busData);
+        setRoute(
+          studentsResponse.data.route || null
+        );
+        setSchedule(
+          studentsResponse.data.schedule || null
+        );
+        setStudents(
+          studentsResponse.data.students || []
+        );
+
+        if (!busData?.id) {
+          setLocation(null);
+          return;
+        }
+
+        try {
+          const locationResponse = await api.get(
+            `/bus-location/${busData.id}`
+          );
+
+          setLocation(
+            locationResponse.data?.location || null
+          );
+        } catch (locationError) {
+          if (locationError.response?.status === 404) {
+            setLocation(null);
+          } else {
+            throw locationError;
+          }
+        }
+      } catch (fetchError) {
+        console.error(
+          "Live location data error:",
+          fetchError
+        );
+
+        setError(
+          fetchError.response?.data?.message ||
+            fetchError.message ||
+            "Could not load live location information."
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    fetchLiveLocationData(true);
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(
+          watchIdRef.current
+        );
+      }
+    };
+  }, [fetchLiveLocationData]);
+
+  const sendLocationToBackend = async (
+    latitude,
+    longitude,
+    speed
+  ) => {
+    if (!bus?.id) {
+      throw new Error(
+        "No active bus is assigned to this driver."
+      );
+    }
+
+    const response = await api.post("/bus-location", {
+      bus_id: bus.id,
+      latitude,
+      longitude,
+      speed,
+    });
+
+    const savedLocation =
+      response.data?.location || {};
+
+    setLocation((previousLocation) => ({
+      ...previousLocation,
+      ...savedLocation,
+      latitude,
+      longitude,
+      speed,
+      updated_at:
+        savedLocation.updated_at || new Date(),
+    }));
+  };
+
+  const startLocationSharing = () => {
+    if (!bus?.id) {
+      setError(
+        "No active bus is assigned to this driver."
+      );
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setError(
+        "Geolocation is not supported by this browser."
+      );
+      return;
+    }
+
+    setError("");
+    setSuccessMessage("");
+
+    watchIdRef.current =
+      navigator.geolocation.watchPosition(
+        async (position) => {
+          try {
+            const latitude =
+              position.coords.latitude;
+
+            const longitude =
+              position.coords.longitude;
+
+            const speedInMetersPerSecond =
+              position.coords.speed || 0;
+
+            const speedInKilometersPerHour =
+              Number(
+                (
+                  speedInMetersPerSecond * 3.6
+                ).toFixed(2)
+              );
+
+            await sendLocationToBackend(
+              latitude,
+              longitude,
+              speedInKilometersPerHour
+            );
+
+            setSharing(true);
+            setSuccessMessage(
+              "Live location is being shared."
+            );
+          } catch (locationUpdateError) {
+            console.error(
+              "Location update error:",
+              locationUpdateError
+            );
+
+            setError(
+              locationUpdateError.response?.data
+                ?.message ||
+                locationUpdateError.message ||
+                "Could not update live location."
+            );
+          }
+        },
+        (geolocationError) => {
+          console.error(
+            "Geolocation error:",
+            geolocationError
+          );
+
+          setSharing(false);
+
+          if (
+            geolocationError.code ===
+            geolocationError.PERMISSION_DENIED
+          ) {
+            setError(
+              "Location permission was denied. Allow location access from browser settings."
+            );
+          } else {
+            setError(
+              "Could not access your current location."
+            );
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 5000,
+        }
+      );
+  };
+
+  const stopLocationSharing = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(
+        watchIdRef.current
+      );
+
+      watchIdRef.current = null;
+    }
+
+    setSharing(false);
+    setSuccessMessage(
+      "Live location sharing stopped."
+    );
+  };
+
+  const currentPosition = useMemo(() => {
+    const latitude = Number(location?.latitude);
+    const longitude = Number(location?.longitude);
+
+    if (
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude)
+    ) {
+      return [latitude, longitude];
+    }
+
+    return DEFAULT_POSITION;
+  }, [location]);
+
+  const onboardStudents = students.filter(
+    (student) =>
+      student.attendance_id &&
+      !student.check_out_time
+  ).length;
+
+  const estimatedTime =
+    route?.estimated_time ||
+    location?.estimated_time ||
+    "N/A";
+
+  if (loading) {
+    return (
+      <div className="min-h-[65vh] flex items-center justify-center">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl px-10 py-9 text-center">
+          <RefreshCw
+            size={42}
+            className="mx-auto text-blue-600 animate-spin"
+          />
+
+          <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white">
+            Loading Live Location
+          </h2>
+
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
+            Fetching bus and route information...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-
       <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-sky-500 rounded-3xl p-8 text-white shadow-xl">
+        <div className="flex flex-wrap justify-between items-center gap-5">
+          <div>
+            <h1 className="text-4xl font-bold flex items-center gap-3">
+              <Navigation size={38} />
+              Live Location
+            </h1>
 
-        <h1 className="text-4xl font-bold flex items-center gap-3">
-          <Navigation size={38} />
-          Live Location
-        </h1>
+            <p className="mt-3 text-blue-100">
+              Share and monitor your bus location in
+              real time.
+            </p>
+          </div>
 
-        <p className="mt-3 text-blue-100">
-          Track your bus in real time.
-        </p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() =>
+                fetchLiveLocationData(false)
+              }
+              disabled={refreshing}
+              className="flex items-center gap-2 bg-white/20 px-5 py-3 rounded-xl font-semibold hover:bg-white/30 disabled:opacity-60"
+            >
+              <RefreshCw
+                size={18}
+                className={
+                  refreshing ? "animate-spin" : ""
+                }
+              />
 
+              {refreshing
+                ? "Refreshing..."
+                : "Refresh"}
+            </button>
+
+            {!sharing ? (
+              <button
+                type="button"
+                onClick={startLocationSharing}
+                className="flex items-center gap-2 bg-slate-900 px-5 py-3 rounded-xl font-semibold hover:bg-slate-800"
+              >
+                <Radio size={18} />
+                Start Sharing
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={stopLocationSharing}
+                className="flex items-center gap-2 bg-red-600 px-5 py-3 rounded-xl font-semibold hover:bg-red-700"
+              >
+                <Square size={18} />
+                Stop Sharing
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Top Cards */}
+      {error && (
+        <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-100 px-5 py-4 text-red-700">
+          <AlertCircle size={20} />
+          {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-100 px-5 py-4 text-green-700">
+          <LocateFixed size={20} />
+          {successMessage}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-
         <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-6 text-white shadow-xl">
-
           <Bus size={34} />
 
           <p className="mt-4 text-white/80">
@@ -136,13 +534,12 @@ export default function LiveLocation() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            {bus?.speed || "40 km/h"}
+            {Number(location?.speed || 0).toFixed(1)}{" "}
+            km/h
           </h2>
-
         </div>
 
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-6 text-white shadow-xl">
-
           <Users size={34} />
 
           <p className="mt-4 text-white/80">
@@ -150,309 +547,227 @@ export default function LiveLocation() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            {studentCount}
+            {onboardStudents}
           </h2>
-
         </div>
 
         <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-3xl p-6 text-white shadow-xl">
-
           <Clock size={34} />
 
           <p className="mt-4 text-white/80">
-            ETA
+            Estimated Time
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            {bus?.eta || "8 Min"}
+            {estimatedTime}
           </h2>
-
         </div>
 
         <div className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-3xl p-6 text-white shadow-xl">
-
           <MapPinned size={34} />
 
           <p className="mt-4 text-white/80">
-            Status
+            Sharing Status
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {bus?.status || "Running"}
+          <h2 className="text-2xl font-bold mt-2">
+            {sharing ? "Live" : "Stopped"}
           </h2>
-
         </div>
-
       </div>
 
-      {/* Map */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-6">
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              Live Map
+            </h2>
 
-      <div className="bg-white rounded-3xl shadow-xl p-6">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Last updated:{" "}
+              {formatUpdatedTime(
+                location?.updated_at
+              )}
+            </p>
+          </div>
 
-        <div className="flex justify-between items-center mb-6">
-
-          <h2 className="text-2xl font-bold">
-            Live Map
-          </h2>
-
-          <button
-            onClick={handleRefresh}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-3 rounded-xl hover:scale-105 transition"
+          <div
+            className={`px-4 py-2 rounded-full text-sm font-semibold ${
+              sharing
+                ? "bg-green-100 text-green-700"
+                : "bg-slate-100 text-slate-600"
+            }`}
           >
-            <RotateCw
-              size={18}
-              className={loading ? "animate-spin" : ""}
-            />
-            Refresh
-          </button>
-
+            {sharing
+              ? "Location sharing active"
+              : "Location sharing inactive"}
+          </div>
         </div>
 
         <div className="rounded-3xl overflow-hidden h-[500px]">
+          <MapContainer
+            center={currentPosition}
+            zoom={15}
+            scrollWheelZoom
+            className="w-full h-full"
+          >
+            <MapUpdater position={currentPosition} />
 
-          {locationEnabled ? (
+            <TileLayer
+              attribution="&copy; OpenStreetMap contributors"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
 
-            <MapContainer
-              center={busPosition}
-              zoom={14}
-              scrollWheelZoom={true}
-              className="w-full h-full"
+            <Marker
+              position={currentPosition}
+              icon={busIcon}
             >
+              <Popup>
+                <div className="text-center">
+                  <h3 className="font-bold">
+                    {bus?.bus_number || "Bus"}
+                  </h3>
 
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+                  <p>
+                    Speed:{" "}
+                    {Number(
+                      location?.speed || 0
+                    ).toFixed(1)}{" "}
+                    km/h
+                  </p>
 
-              <Marker
-                position={busPosition}
-                icon={busIcon}
-              >
-
-                <Popup>
-
-                  <div className="text-center">
-
-                    <h3 className="font-bold">
-                      {bus?.busNo || "N/A"}
-                    </h3>
-
-                    <p>
-                      Current Speed : {bus?.speed || "40 km/h"}
-                    </p>
-
-                    <p>
-                      Status : {bus?.status || "Running"}
-                    </p>
-
-                  </div>
-
-                </Popup>
-
-              </Marker>
-
-                            {/* Start Stop */}
-
-              <Marker
-                position={route[0]}
-                icon={stopIcon}
-              >
-                <Popup>
-                  {pickupPoints[0] || "Start"}
-                </Popup>
-              </Marker>
-
-              {/* Destination */}
-
-              <Marker
-                position={route[route.length - 1]}
-                icon={stopIcon}
-              >
-                <Popup>
-                  {pickupPoints[pickupPoints.length - 1] || "Destination"}
-                </Popup>
-              </Marker>
-
-              {/* Route */}
-
-              <Polyline
-                positions={route}
-                pathOptions={{
-                  color: "#2563eb",
-                  weight: 6,
-                }}
-              />
-
-            </MapContainer>
-
-          ) : (
-
-            <div className="h-full flex items-center justify-center bg-slate-100 rounded-3xl">
-
-              <div className="text-center">
-
-                <MapPinned
-                  size={60}
-                  className="mx-auto text-red-500 mb-4"
-                />
-
-                <h2 className="text-2xl font-bold">
-                  Location Sharing Disabled
-                </h2>
-
-                <p className="text-gray-500 mt-2">
-                  Enable Live Location from Settings.
-                </p>
-
-              </div>
-
-            </div>
-
-          )}
-
+                  <p>
+                    Status:{" "}
+                    {bus?.status || "N/A"}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          </MapContainer>
         </div>
-
       </div>
 
-      {/* Bottom Section */}
-
       <div className="grid lg:grid-cols-2 gap-6">
-
-        {/* Route Progress */}
-
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-
-          <h2 className="text-2xl font-bold mb-8">
-            Route Progress
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white">
+            Route Information
           </h2>
 
           <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="w-5 h-5 rounded-full bg-green-500" />
+                <div className="h-14 border-l-4 border-dashed border-blue-300" />
+                <div className="w-5 h-5 rounded-full bg-red-500" />
+              </div>
 
-            {pickupPoints.length > 0 ? (
+              <div className="flex-1 flex flex-col justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Source
+                  </p>
 
-              pickupPoints.map((point, index) => (
-
-                <div key={index}>
-
-                  <div className="flex items-center gap-4">
-
-                    <div
-                      className={`w-5 h-5 rounded-full ${
-                        index === 0
-                          ? "bg-blue-600 animate-pulse"
-                          : "bg-green-500"
-                      }`}
-                    />
-
-                    <span
-                      className={
-                        index === 0 ? "font-bold" : ""
-                      }
-                    >
-                      {point}
-                      {index === 0 && " (Current)"}
-                    </span>
-
-                  </div>
-
-                  {index !== pickupPoints.length - 1 && (
-
-                    <div className="ml-2 border-l-4 border-dashed border-blue-300 h-8"></div>
-
-                  )}
-
+                  <p className="font-bold text-slate-900 dark:text-white">
+                    {route?.source || "Not assigned"}
+                  </p>
                 </div>
 
-              ))
+                <div>
+                  <p className="text-sm text-slate-500">
+                    Destination
+                  </p>
 
-            ) : (
+                  <p className="font-bold text-slate-900 dark:text-white">
+                    {route?.destination ||
+                      "Not assigned"}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-              <p className="text-gray-500">
-                No Pickup Points Available
+            <div className="border-t pt-5 dark:border-slate-700">
+              <p className="text-slate-500">
+                Route Name
               </p>
 
-            )}
-
+              <p className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                {route?.route_name ||
+                  "Route unavailable"}
+              </p>
+            </div>
           </div>
-
         </div>
 
-        {/* Trip Information */}
-
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-
-          <h2 className="text-2xl font-bold mb-8">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white">
             Trip Information
           </h2>
 
           <div className="space-y-5">
-
-            <div className="flex justify-between">
-
-              <span className="text-gray-500">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
                 Bus Number
               </span>
 
-              <span className="font-bold">
-                {bus?.busNo || "N/A"}
+              <span className="font-bold text-slate-900 dark:text-white">
+                {bus?.bus_number || "N/A"}
               </span>
-
             </div>
 
-            <div className="flex justify-between">
-
-              <span className="text-gray-500">
-                Driver
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
+                Bus Name
               </span>
 
-              <span className="font-bold">
-                {driver?.name || "N/A"}
+              <span className="font-bold text-slate-900 dark:text-white">
+                {bus?.bus_name || "N/A"}
               </span>
-
             </div>
 
-            <div className="flex justify-between">
-
-              <span className="text-gray-500">
-                Route
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
+                Departure
               </span>
 
-              <span className="font-bold">
-                {bus?.route || "N/A"}
+              <span className="font-bold text-slate-900 dark:text-white">
+                {formatTime(
+                  schedule?.departure_time
+                )}
               </span>
-
             </div>
 
-            <div className="flex justify-between">
-
-              <span className="text-gray-500">
-                ETA
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
+                Arrival
               </span>
 
-              <span className="font-bold text-blue-600">
-                {bus?.eta || "8 Minutes"}
+              <span className="font-bold text-slate-900 dark:text-white">
+                {formatTime(schedule?.arrival_time)}
               </span>
-
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
+                Driver ID
+              </span>
 
-              <span className="text-gray-500">
-                Status
+              <span className="font-bold text-slate-900 dark:text-white">
+                {driverId || "N/A"}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">
+                Trip Status
               </span>
 
               <span className="font-bold text-green-600">
-                {bus?.status || "Running"}
+                {schedule?.status || "Inactive"}
               </span>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

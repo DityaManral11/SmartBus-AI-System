@@ -159,7 +159,7 @@ export default function MyBus() {
             className="mx-auto text-blue-600 animate-spin"
           />
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-white">
             Loading Bus Details
           </h2>
 
@@ -182,11 +182,11 @@ export default function MyBus() {
             />
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-white">
             Bus Details Could Not Load
           </h2>
 
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-400">
             {error}
           </p>
 
@@ -323,7 +323,7 @@ export default function MyBus() {
               />
             </div>
 
-            <h2 className="text-2xl font-bold mt-5 text-slate-800">
+            <h2 className="text-2xl font-bold mt-5 text-white">
               {busData?.driver_name ||
                 "Not Assigned"}
             </h2>
@@ -385,7 +385,7 @@ export default function MyBus() {
         {/* Route */}
 
         <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-3xl font-bold mb-8 text-slate-800">
+          <h2 className="text-3xl font-bold mb-8 text-white">
             Route Details
           </h2>
 
@@ -394,7 +394,7 @@ export default function MyBus() {
               Route Name
             </p>
 
-            <h3 className="mt-1 text-xl font-bold text-slate-800">
+            <h3 className="mt-1 text-xl font-bold text-white">
               {busData?.route_name ||
                 "Route not assigned"}
             </h3>
@@ -420,7 +420,7 @@ export default function MyBus() {
                           : "Destination"}
                       </p>
 
-                      <span className="font-bold text-lg text-slate-800">
+                      <span className="font-bold text-lg text-white">
                         {point}
                       </span>
                     </div>
@@ -443,43 +443,43 @@ export default function MyBus() {
       {/* Today's Journey */}
 
       <div className="bg-white rounded-3xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold mb-8 text-slate-800">
+        <h2 className="text-3xl font-bold mb-8 text-white">
           Today&apos;s Journey
         </h2>
 
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-blue-50 rounded-2xl p-6">
+          <div className=" bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <MapPinned className="text-blue-600" />
 
-            <h3 className="text-xl font-bold mt-4 text-slate-800">
+            <h3 className="text-xl font-bold mt-4 text-white">
               Departure
             </h3>
 
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-slate-400">
               {formatTime(busData?.departure_time)}
             </p>
           </div>
 
-          <div className="bg-green-50 rounded-2xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <Bus className="text-green-600" />
 
-            <h3 className="text-xl font-bold mt-4 text-slate-800">
+            <h3 className="text-xl font-bold mt-4 text-white">
               Arrival
             </h3>
 
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-slate-400">
               {formatTime(busData?.arrival_time)}
             </p>
           </div>
 
-          <div className="bg-purple-50 rounded-2xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <Clock className="text-purple-600" />
 
-            <h3 className="text-xl font-bold mt-4 text-slate-800">
+            <h3 className="text-xl font-bold mt-4 text-white">
               Schedule Status
             </h3>
 
-            <p className="mt-2 text-slate-600">
+            <p className="mt-2 text-slate-400">
               {formatStatus(
                 busData?.schedule_status
               )}

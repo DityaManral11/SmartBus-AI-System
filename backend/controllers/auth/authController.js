@@ -682,3 +682,250 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
+// ================= FORGOT PASSWORD =================
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const {
+      role,
+      email,
+      verificationValue,
+      newPassword,
+      confirmPassword,
+    } = req.body;
+
+    // Check all fields
+    if (
+      !role ||
+      !email ||
+      !verificationValue ||
+      !newPassword ||
+      !confirmPassword
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }
+
+    // Validate role
+    const allowedRoles = ["student", "driver", "admin"];
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user role.",
+      });
+    }
+
+    // Password length validation
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password must contain at least 8 characters.",
+      });
+    }
+
+    // Password match validation
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password and confirm password do not match.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedVerification =
+      verificationValue.trim();
+
+    let verificationQuery;
+    let queryValues;
+
+    // Student verification
+    if (role === "student") {
+      verificationQuery = `
+        SELECT
+          users.id,
+          users.password,
+          users.role
+        FROM users
+        INNER JOIN students
+          ON students.user_id = users.id
+        WHERE LOWER(users.email) = ?
+          AND students.roll_number = ?
+          AND users.role = 'student'
+        LIMIT 1
+      `;
+
+      queryValues = [
+        normalizedEmail,
+        normalizedVerification,
+      ];
+    }
+
+    // Driver verification
+    if (role === "driver") {
+      verificationQuery = `
+        SELECT
+          users.id,
+          users.password,
+          users.role
+        FROM users
+        INNER JOIN drivers
+          ON drivers.user_id = users.id
+        WHERE LOWER(users.email) = ?
+          AND drivers.license_number = ?
+          AND users.role = 'driver'
+        LIMIT 1
+      `;
+
+      queryValues = [
+        normalizedEmail,
+        normalizedVerification,
+      ];
+    }
+
+    // Admin verification
+    if (role === "admin") {
+      if (
+        normalizedVerification !==
+        process.env.ADMIN_SECRET_KEY
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Invalid admin secret key.",
+        });
+      }
+
+      verificationQuery = `
+        SELECT
+          users.id,
+          users.password,
+          users.role
+        FROM users
+        INNER JOIN admins
+          ON admins.user_id = users.id
+        WHERE LOWER(users.email) = ?
+          AND users.role = 'admin'
+        LIMIT 1
+      `;
+
+      queryValues = [normalizedEmail];
+    }
+
+    db.query(
+      verificationQuery,
+      queryValues,
+      async (verificationError, results) => {
+        if (verificationError) {
+          console.error(
+            "Forgot password verification error:",
+            verificationError
+          );
+
+          return res.status(500).json({
+            success: false,
+            message:
+              "Database error while verifying account.",
+          });
+        }
+
+        if (results.length === 0) {
+          let message = "Account details do not match.";
+
+          if (role === "student") {
+            message =
+              "Student email and roll number do not match.";
+          }
+
+          if (role === "driver") {
+            message =
+              "Driver email and license number do not match.";
+          }
+
+          if (role === "admin") {
+            message =
+              "Admin account was not found with this email.";
+          }
+
+          return res.status(404).json({
+            success: false,
+            message,
+          });
+        }
+
+        const user = results[0];
+
+        // Prevent reusing current password
+        const passwordAlreadyUsed =
+          await bcrypt.compare(
+            newPassword,
+            user.password
+          );
+
+        if (passwordAlreadyUsed) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "New password must be different from the current password.",
+          });
+        }
+
+        const hashedPassword = await bcrypt.hash(
+          newPassword,
+          10
+        );
+
+        db.query(
+          `
+            UPDATE users
+            SET password = ?
+            WHERE id = ?
+          `,
+          [hashedPassword, user.id],
+          (updateError, updateResult) => {
+            if (updateError) {
+              console.error(
+                "Forgot password update error:",
+                updateError
+              );
+
+              return res.status(500).json({
+                success: false,
+                message:
+                  "Password could not be updated.",
+              });
+            }
+
+            if (updateResult.affectedRows === 0) {
+              return res.status(404).json({
+                success: false,
+                message: "User account was not found.",
+              });
+            }
+
+            return res.status(200).json({
+              success: true,
+              message:
+                "Password updated successfully. You can now log in.",
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Forgot password controller error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Something went wrong while resetting the password.",
+    });
+  }
+};

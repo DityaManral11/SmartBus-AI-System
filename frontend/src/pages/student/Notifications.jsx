@@ -570,7 +570,7 @@ export default function Notifications() {
             className="mx-auto text-blue-600 animate-spin"
           />
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-white">
             Loading Notifications
           </h2>
 
@@ -592,7 +592,7 @@ export default function Notifications() {
               />
             </div>
 
-            <h2 className="mt-5 text-2xl font-bold text-slate-800">
+            <h2 className="mt-5 text-2xl font-bold text-white">
               No Notifications Yet
             </h2>
 

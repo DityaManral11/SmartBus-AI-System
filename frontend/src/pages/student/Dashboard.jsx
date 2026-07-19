@@ -168,17 +168,17 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-xl px-10 py-9 text-center">
+        <div className="rounded-3xl border border-slate-200 bg-white px-10 py-9 text-center shadow-xl transition-colors dark:border-slate-700 dark:bg-slate-900">
           <RefreshCw
             size={42}
             className="mx-auto text-blue-600 animate-spin"
           />
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white dark:text-white">
             Loading Dashboard
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
             Fetching your bus and schedule details...
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center">
-        <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl p-9 text-center">
+        <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-9 text-center shadow-xl transition-colors dark:border-slate-700 dark:bg-slate-900">
           <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
             <AlertCircle
               size={34}
@@ -197,11 +197,11 @@ export default function Dashboard() {
             />
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white dark:text-white">
             Dashboard Could Not Load
           </h2>
 
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-600 dark:text-slate-300 dark:text-slate-300">
             {error}
           </p>
 
@@ -416,14 +416,14 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Live Map */}
 
-        <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-5">
+        <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-5 shadow-lg transition-colors dark:border-slate-700 dark:bg-slate-900">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div>
-              <h2 className="text-2xl font-bold text-slate-800">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white dark:text-white">
                 Live Bus Tracking
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {hasLiveLocation
                   ? "Showing the latest bus location."
                   : "Live location is unavailable. Showing the default location."}
@@ -439,7 +439,7 @@ export default function Dashboard() {
                 }`}
               ></span>
 
-              <span className="text-slate-600">
+              <span className="text-slate-600 dark:text-slate-300">
                 {hasLiveLocation
                   ? "Live"
                   : "Offline"}
@@ -503,12 +503,12 @@ export default function Dashboard() {
 
         {/* Driver Card */}
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg transition-colors dark:border-slate-700 dark:bg-slate-900">
           <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-slate-200 border-2 border-blue-500 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full border-2 border-blue-500 bg-slate-200 flex items-center justify-center dark:bg-slate-800">
               <CircleUserRound
                 size={38}
-                className="text-slate-700"
+                className="text-slate-700 dark:text-slate-200"
               />
             </div>
 
@@ -517,7 +517,7 @@ export default function Dashboard() {
                 "Not Assigned"}
             </h2>
 
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-slate-400">
               Driver
             </p>
 
@@ -528,7 +528,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="space-y-4 mt-8 text-slate-700">
+          <div className="space-y-4 mt-8 text-slate-700 dark:text-slate-200">
             <div className="flex items-center gap-3">
               <Phone className="text-blue-600" />
 
@@ -581,18 +581,18 @@ export default function Dashboard() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Schedule */}
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg transition-colors dark:border-slate-700 dark:bg-slate-900">
           <h2 className="text-2xl font-bold mb-5 text-slate-800">
             Today&apos;s Schedule
           </h2>
 
           <div className="space-y-6">
             <div className="border-l-4 border-blue-600 pl-4">
-              <h3 className="font-bold text-slate-800">
+              <h3 className="font-bold text-slate-800 dark:text-white">
                 Departure
               </h3>
 
-              <p className="mt-1 text-slate-600">
+              <p className="mt-1 text-slate-600 dark:text-slate-300">
                 {formatTime(
                   dashboard?.departure_time
                 )}
@@ -600,11 +600,11 @@ export default function Dashboard() {
             </div>
 
             <div className="border-l-4 border-green-500 pl-4">
-              <h3 className="font-bold text-slate-800">
+              <h3 className="font-bold text-slate-800 dark:text-white">
                 University Arrival
               </h3>
 
-              <p className="mt-1 text-slate-600">
+              <p className="mt-1 text-slate-600 dark:text-slate-300">
                 {formatTime(
                   dashboard?.arrival_time
                 )}
@@ -612,11 +612,11 @@ export default function Dashboard() {
             </div>
 
             <div className="border-l-4 border-purple-500 pl-4">
-              <h3 className="font-bold text-slate-800">
+              <h3 className="font-bold text-slate-800 dark:text-white">
                 Schedule Status
               </h3>
 
-              <p className="mt-1 text-slate-600">
+              <p className="mt-1 text-slate-600 dark:text-slate-300">
                 {formatStatus(
                   dashboard?.schedule_status
                 )}
@@ -624,11 +624,11 @@ export default function Dashboard() {
             </div>
 
             <div className="border-l-4 border-orange-500 pl-4">
-              <h3 className="font-bold text-slate-800">
+              <h3 className="font-bold text-slate-800 dark:text-white">
                 Attendance
               </h3>
 
-              <p className="mt-1 text-slate-600">
+              <p className="mt-1 text-slate-600 dark:text-slate-300">
                 {attendancePercentage.toFixed(2)}%
               </p>
             </div>
@@ -637,46 +637,59 @@ export default function Dashboard() {
 
         {/* Journey Information */}
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg transition-colors dark:border-slate-700 dark:bg-slate-900">
           <h2 className="text-2xl font-bold mb-5 text-slate-800">
             Journey Information
           </h2>
 
-          <div className="space-y-5">
-            <div className="bg-blue-50 rounded-xl p-4">
-              🚌 Your Bus:{" "}
-              <span className="font-semibold">
-                {dashboard?.bus_number || "N/A"}
+          <div className="space-y-5 text-base font-medium text-slate-700 dark:text-slate-200">
+            <div className="flex items-center gap-2">
+              <span>🚌</span>
+              <span>
+                Your Bus:{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {dashboard?.bus_number || "N/A"}
+                </strong>
               </span>
             </div>
 
-            <div className="bg-green-50 rounded-xl p-4">
-              📍 Route:{" "}
-              <span className="font-semibold">
-                {dashboard?.route_name || "N/A"}
+            <div className="flex items-center gap-2">
+              <span>📍</span>
+              <span>
+                Route:{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {dashboard?.route_name || "N/A"}
+                </strong>
               </span>
             </div>
 
-            <div className="bg-yellow-50 rounded-xl p-4">
-              ⏰ Departure Time:{" "}
-              <span className="font-semibold">
-                {formatTime(
-                  dashboard?.departure_time
-                )}
+            <div className="flex items-center gap-2">
+              <span>⏰</span>
+              <span>
+                Departure Time:{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {formatTime(dashboard?.departure_time)}
+                </strong>
               </span>
             </div>
 
-            <div className="bg-purple-50 rounded-xl p-4">
-              🔔 Unread Notifications:{" "}
-              <span className="font-semibold">
-                {unreadNotifications}
+            <div className="flex items-center gap-2">
+              <span>🔔</span>
+              <span>
+                Unread Notifications:{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {unreadNotifications}
+                </strong>
               </span>
             </div>
 
-            <div className="bg-orange-50 rounded-xl p-4">
-              📊 Attendance:{" "}
-              <span className="font-semibold">
-                {attendancePercentage.toFixed(2)}%
+            <div className="flex items-center gap-2">
+              <span>📊</span>
+              <span>
+                Attendance:{" "}
+                <strong className="font-bold text-slate-900 dark:text-white">
+                  {attendancePercentage.toFixed(2)}%
+                </strong>
               </span>
             </div>
           </div>

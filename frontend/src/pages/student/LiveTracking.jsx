@@ -218,17 +218,17 @@ export default function LiveTracking() {
   if (loading) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-xl px-10 py-9 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl px-10 py-9 text-center transition-colors">
           <RefreshCw
             size={42}
             className="mx-auto text-blue-600 animate-spin"
           />
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white dark:text-white">
             Loading Live Tracking
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
             Fetching your bus location...
           </p>
         </div>
@@ -239,7 +239,7 @@ export default function LiveTracking() {
   if (error && !trackingData) {
     return (
       <div className="min-h-[65vh] flex items-center justify-center">
-        <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl p-9 text-center">
+        <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl p-9 text-center transition-colors">
           <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
             <AlertCircle
               size={34}
@@ -247,11 +247,11 @@ export default function LiveTracking() {
             />
           </div>
 
-          <h2 className="mt-5 text-2xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl font-bold text-slate-800 dark:text-white dark:text-white">
             Tracking Could Not Load
           </h2>
 
-          <p className="mt-3 text-slate-600">
+          <p className="mt-3 text-slate-600 dark:text-slate-300">
             {error}
           </p>
 
@@ -340,18 +340,18 @@ export default function LiveTracking() {
       </div>
 
       {!hasAssignedBus && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-3xl p-6 flex items-start gap-4">
+        <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-3xl p-6 flex items-start gap-4">
           <AlertCircle
             className="text-yellow-600 shrink-0"
             size={28}
           />
 
           <div>
-            <h2 className="text-xl font-bold text-yellow-800">
+            <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-300">
               Bus Not Assigned
             </h2>
 
-            <p className="mt-1 text-yellow-700">
+            <p className="mt-1 text-yellow-700 dark:text-yellow-200">
               Live tracking will become available
               after the administrator assigns a bus
               to your account.
@@ -361,18 +361,18 @@ export default function LiveTracking() {
       )}
 
       {hasAssignedBus && !hasLiveLocation && (
-        <div className="bg-orange-50 border border-orange-200 rounded-3xl p-6 flex items-start gap-4">
+        <div className="bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 rounded-3xl p-6 flex items-start gap-4">
           <Navigation
             className="text-orange-600 shrink-0"
             size={28}
           />
 
           <div>
-            <h2 className="text-xl font-bold text-orange-800">
+            <h2 className="text-xl font-bold text-orange-800 dark:text-orange-300">
               Location Not Available
             </h2>
 
-            <p className="mt-1 text-orange-700">
+            <p className="mt-1 text-orange-700 dark:text-orange-200">
               Your bus is assigned, but its current
               GPS location has not been updated yet.
             </p>
@@ -445,14 +445,14 @@ export default function LiveTracking() {
 
       {/* Map */}
 
-      <div className="bg-white rounded-3xl shadow-xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl p-5 transition-colors">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
               Bus Location
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
               {hasLiveLocation
                 ? "The map refreshes automatically every 5 seconds."
                 : "Waiting for the latest GPS location."}
@@ -465,7 +465,7 @@ export default function LiveTracking() {
             onClick={() =>
               fetchTrackingData(false)
             }
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white font-semibold hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-white font-semibold hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
           >
             <RefreshCw
               size={18}
@@ -480,7 +480,7 @@ export default function LiveTracking() {
           </button>
         </div>
 
-        <div className="rounded-3xl overflow-hidden border border-slate-200">
+        <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-700">
           <MapContainer
             center={busPosition}
             zoom={hasLiveLocation ? 15 : 13}
@@ -524,7 +524,7 @@ export default function LiveTracking() {
           </MapContainer>
         </div>
 
-        <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm text-slate-500">
+        <div className="mt-4 flex flex-wrap justify-between gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
           <span>
             Latitude:{" "}
             {hasLiveLocation
@@ -553,32 +553,32 @@ export default function LiveTracking() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Driver */}
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl p-8 transition-colors">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
             Driver Details
           </h2>
 
           <div className="mt-7 flex items-center gap-5">
-            <div className="w-16 h-16 rounded-full bg-slate-200 border-2 border-blue-500 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-blue-500 flex items-center justify-center">
               <CircleUserRound
                 size={38}
-                className="text-slate-700"
+                className="text-slate-700 dark:text-slate-200"
               />
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold text-slate-800">
+              <h3 className="text-xl font-semibold text-slate-800 dark:text-white">
                 {trackingData?.driver_name ||
                   "Not Assigned"}
               </h3>
 
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-slate-400">
                 Assigned Driver
               </p>
             </div>
           </div>
 
-          <div className="mt-7 space-y-4 text-slate-700">
+          <div className="mt-7 space-y-4 text-slate-700 dark:text-slate-200">
             <div className="flex items-center gap-3">
               <Phone className="text-blue-600" />
 
@@ -630,48 +630,48 @@ export default function LiveTracking() {
 
         {/* Journey */}
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl p-8 transition-colors">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
             Journey Details
           </h2>
 
           <div className="mt-7 space-y-5">
-            <div className="rounded-2xl bg-blue-50 p-5">
-              <p className="text-sm text-slate-500">
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Route
               </p>
 
-              <h3 className="mt-1 text-xl font-bold text-slate-800">
+              <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
                 {trackingData?.route_name || "N/A"}
               </h3>
             </div>
 
-            <div className="rounded-2xl bg-green-50 p-5">
-              <p className="text-sm text-slate-500">
+            <div className="rounded-2xl border border-green-100 bg-green-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Starting Point
               </p>
 
-              <h3 className="mt-1 text-xl font-bold text-slate-800">
+              <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
                 {trackingData?.source || "N/A"}
               </h3>
             </div>
 
-            <div className="rounded-2xl bg-purple-50 p-5">
-              <p className="text-sm text-slate-500">
+            <div className="rounded-2xl border border-purple-100 bg-purple-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Destination
               </p>
 
-              <h3 className="mt-1 text-xl font-bold text-slate-800">
+              <h3 className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
                 {trackingData?.destination || "N/A"}
               </h3>
             </div>
 
-            <div className="rounded-2xl bg-orange-50 p-5">
-              <p className="text-sm text-slate-500">
+            <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Schedule
               </p>
 
-              <h3 className="mt-1 text-lg font-bold text-slate-800">
+              <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">
                 {formatTime(
                   trackingData?.departure_time
                 )}{" "}

@@ -75,7 +75,7 @@ function Toggle({
 
       <span
 
-        className={`absolute top-1 h-6 w-6 rounded-full bg-white transition ${
+        className={`absolute top-1 h-6 w-6 rounded-full bg-white dark:bg-slate-900 transition ${
 
           enabled
 
@@ -670,7 +670,7 @@ export default function StudentSettings() {
 
       <div className="flex min-h-[60vh] items-center justify-center">
 
-        <div className="rounded-3xl bg-white px-10 py-9 text-center shadow-xl dark:bg-slate-900">
+        <div className="rounded-3xl bg-white dark:bg-slate-900 px-10 py-9 text-center shadow-xl dark:bg-slate-900">
 
           <RefreshCw
 
@@ -708,7 +708,7 @@ export default function StudentSettings() {
 
   return (
 
-    <div className="space-y-8 text-slate-800 dark:text-slate-100">
+    <div className="space-y-8 text-slate-800 dark:text-white dark:text-slate-100">
 
       {/* Header */}
 
@@ -748,7 +748,7 @@ export default function StudentSettings() {
 
             disabled={saving}
 
-            className="flex items-center justify-center gap-2 rounded-xl bg-white/20 px-5 py-3 font-semibold transition hover:bg-white/30 disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-slate-900 /20 px-5 py-3 font-semibold transition hover:bg-white dark:bg-slate-900 /30 disabled:opacity-60"
 
           >
 
@@ -830,7 +830,7 @@ export default function StudentSettings() {
 
  
 
-      <div className="rounded-3xl bg-white p-8 shadow-xl transition-colors dark:bg-slate-900">
+      <div className="rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-xl transition-colors dark:bg-slate-900">
 
         <h2 className="mb-2 text-2xl font-bold">
 
@@ -1026,7 +1026,7 @@ export default function StudentSettings() {
 
             {/* Security */}
 
-      <div className="rounded-3xl bg-white p-8 shadow-xl transition-colors dark:bg-slate-900">
+      <div className="rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-xl transition-colors dark:bg-slate-900">
         <div className="mb-7 flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-indigo-950">
             <Lock className="text-indigo-600 dark:text-indigo-400" />
@@ -1077,7 +1077,7 @@ export default function StudentSettings() {
                 placeholder="Enter current password"
                 autoComplete="current-password"
                 disabled={changingPassword}
-                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 dark:text-white outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
               />
 
               <button
@@ -1128,7 +1128,7 @@ export default function StudentSettings() {
                 placeholder="Enter new password"
                 autoComplete="new-password"
                 disabled={changingPassword}
-                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 dark:text-white outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
               />
 
               <button
@@ -1186,7 +1186,7 @@ export default function StudentSettings() {
                 placeholder="Confirm new password"
                 autoComplete="new-password"
                 disabled={changingPassword}
-                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 dark:text-white outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
               />
 
               <button
