@@ -2,13 +2,20 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import "./index.css";
+import "leaflet/dist/leaflet.css";
+
 import App from "./App.jsx";
 
-import { getSavedTheme, applyTheme } from "./utils/theme";
+import {
+  applyTheme,
+  getSavedTheme,
+} from "./utils/theme";
 
 applyTheme(getSavedTheme());
 
-createRoot(document.getElementById("root")).render(
+createRoot(
+  document.getElementById("root")
+).render(
   <StrictMode>
     <App />
   </StrictMode>

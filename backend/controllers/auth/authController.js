@@ -509,3 +509,176 @@ const loginByRole = (requiredRole) => {
 exports.loginStudent = loginByRole("student");
 exports.loginDriver = loginByRole("driver");
 exports.loginAdmin = loginByRole("admin");
+
+// ================= CHANGE PASSWORD =================
+
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+
+    const {
+      current_password,
+      new_password,
+      confirm_password,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user.",
+      });
+    }
+
+    if (userRole !== "student") {
+      return res.status(403).json({
+        success: false,
+        message:
+          "This password route is only available for students.",
+      });
+    }
+
+    if (
+      !current_password ||
+      !new_password ||
+      !confirm_password
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All password fields are required.",
+      });
+    }
+
+    if (new_password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password must contain at least 8 characters.",
+      });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password and confirm password do not match.",
+      });
+    }
+
+    if (current_password === new_password) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "New password must be different from the current password.",
+      });
+    }
+
+    db.query(
+      "SELECT id, password, role FROM users WHERE id = ?",
+      [userId],
+      async (selectError, results) => {
+        if (selectError) {
+          console.error(
+            "Change password select error:",
+            selectError
+          );
+
+          return res.status(500).json({
+            success: false,
+            message: "Database error.",
+          });
+        }
+
+        if (results.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "User account was not found.",
+          });
+        }
+
+        const user = results[0];
+
+        if (user.role !== "student") {
+          return res.status(403).json({
+            success: false,
+            message:
+              "This password route is only available for students.",
+          });
+        }
+
+        const currentPasswordMatches =
+          await bcrypt.compare(
+            current_password,
+            user.password
+          );
+
+        if (!currentPasswordMatches) {
+          return res.status(401).json({
+            success: false,
+            message: "Current password is incorrect.",
+          });
+        }
+
+        const newPasswordAlreadyUsed =
+          await bcrypt.compare(
+            new_password,
+            user.password
+          );
+
+        if (newPasswordAlreadyUsed) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "New password must be different from the current password.",
+          });
+        }
+
+        const hashedPassword =
+          await bcrypt.hash(new_password, 10);
+
+        db.query(
+          "UPDATE users SET password = ? WHERE id = ?",
+          [hashedPassword, userId],
+          (updateError, updateResult) => {
+            if (updateError) {
+              console.error(
+                "Change password update error:",
+                updateError
+              );
+
+              return res.status(500).json({
+                success: false,
+                message:
+                  "Password could not be updated.",
+              });
+            }
+
+            if (updateResult.affectedRows === 0) {
+              return res.status(404).json({
+                success: false,
+                message: "User account was not found.",
+              });
+            }
+
+            return res.status(200).json({
+              success: true,
+              message:
+                "Password updated successfully.",
+            });
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Change password controller error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Something went wrong while changing the password.",
+    });
+  }
+};

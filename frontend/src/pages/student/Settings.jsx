@@ -28,8 +28,13 @@ import {
 
   AlertTriangle,
 
-} from "lucide-react";
+  Lock,
 
+  Eye,
+
+  EyeOff,
+
+} from "lucide-react";
  
 
 import api from "../../services/api";
@@ -126,13 +131,31 @@ export default function StudentSettings() {
 
     useState(true);
 
- 
 
   const [darkMode, setDarkMode] =
 
     useState(false);
 
- 
+  const [currentPassword, setCurrentPassword] =
+    useState("");
+
+  const [newPassword, setNewPassword] =
+    useState("");
+
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
+
+  const [showCurrentPassword, setShowCurrentPassword] =
+    useState(false);
+
+  const [showNewPassword, setShowNewPassword] =
+    useState(false);
+
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
+
+  const [changingPassword, setChangingPassword] =
+    useState(false);
 
   const currentUser = JSON.parse(
 
@@ -574,6 +597,71 @@ export default function StudentSettings() {
 
   };
 
+  const changePassword = async () => {
+    try {
+      setChangingPassword(true);
+
+      setError("");
+      setSuccess("");
+
+      if (
+        !currentPassword ||
+        !newPassword ||
+        !confirmPassword
+      ) {
+        setError("Please fill all password fields.");
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        setError(
+          "New password must contain at least 8 characters."
+        );
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        setError(
+          "New password and confirm password do not match."
+        );
+        return;
+      }
+
+      const token =
+        localStorage.getItem("token");
+
+      const response =
+        await api.put(
+          "/auth/student/change-password",
+          {
+            current_password: currentPassword,
+            new_password: newPassword,
+            confirm_password: confirmPassword,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+      if (response.data.success) {
+        setSuccess(response.data.message);
+
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to change password."
+      );
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
  
 
   if (loading) {
@@ -936,7 +1024,295 @@ export default function StudentSettings() {
 
       </div>
 
- 
+            {/* Security */}
+
+      <div className="rounded-3xl bg-white p-8 shadow-xl transition-colors dark:bg-slate-900">
+        <div className="mb-7 flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-indigo-950">
+            <Lock className="text-indigo-600 dark:text-indigo-400" />
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold">
+              Security
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Update your account password securely.
+            </p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            changePassword();
+          }}
+          className="space-y-6"
+        >
+          {/* Current Password */}
+
+          <div>
+            <label
+              htmlFor="current-password"
+              className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+            >
+              Current Password
+            </label>
+
+            <div className="relative">
+              <input
+                id="current-password"
+                type={
+                  showCurrentPassword
+                    ? "text"
+                    : "password"
+                }
+                value={currentPassword}
+                onChange={(event) =>
+                  setCurrentPassword(
+                    event.target.value
+                  )
+                }
+                placeholder="Enter current password"
+                autoComplete="current-password"
+                disabled={changingPassword}
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowCurrentPassword(
+                    (previous) => !previous
+                  )
+                }
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                aria-label={
+                  showCurrentPassword
+                    ? "Hide current password"
+                    : "Show current password"
+                }
+              >
+                {showCurrentPassword ? (
+                  <EyeOff size={21} />
+                ) : (
+                  <Eye size={21} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* New Password */}
+
+          <div>
+            <label
+              htmlFor="new-password"
+              className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+            >
+              New Password
+            </label>
+
+            <div className="relative">
+              <input
+                id="new-password"
+                type={
+                  showNewPassword
+                    ? "text"
+                    : "password"
+                }
+                value={newPassword}
+                onChange={(event) =>
+                  setNewPassword(event.target.value)
+                }
+                placeholder="Enter new password"
+                autoComplete="new-password"
+                disabled={changingPassword}
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowNewPassword(
+                    (previous) => !previous
+                  )
+                }
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                aria-label={
+                  showNewPassword
+                    ? "Hide new password"
+                    : "Show new password"
+                }
+              >
+                {showNewPassword ? (
+                  <EyeOff size={21} />
+                ) : (
+                  <Eye size={21} />
+                )}
+              </button>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Password must contain at least 8
+              characters.
+            </p>
+          </div>
+
+          {/* Confirm Password */}
+
+          <div>
+            <label
+              htmlFor="confirm-password"
+              className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+            >
+              Confirm New Password
+            </label>
+
+            <div className="relative">
+              <input
+                id="confirm-password"
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(
+                    event.target.value
+                  )
+                }
+                placeholder="Confirm new password"
+                autoComplete="new-password"
+                disabled={changingPassword}
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3.5 pr-12 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-950"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword(
+                    (previous) => !previous
+                  )
+                }
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirmed password"
+                    : "Show confirmed password"
+                }
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={21} />
+                ) : (
+                  <Eye size={21} />
+                )}
+              </button>
+            </div>
+
+            {confirmPassword && (
+              <p
+                className={`mt-2 flex items-center gap-2 text-sm font-medium ${
+                  newPassword === confirmPassword
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-red-600 dark:text-red-400"
+                }`}
+              >
+                {newPassword === confirmPassword ? (
+                  <>
+                    <CheckCircle size={17} />
+                    Passwords match.
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle size={17} />
+                    Passwords do not match.
+                  </>
+                )}
+              </p>
+            )}
+          </div>
+
+          {/* Password Strength */}
+
+          {newPassword && (
+            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold">
+                  Password Strength
+                </span>
+
+                <span
+                  className={`text-sm font-bold ${
+                    newPassword.length >= 12 &&
+                    /[A-Z]/.test(newPassword) &&
+                    /[a-z]/.test(newPassword) &&
+                    /\d/.test(newPassword) &&
+                    /[^A-Za-z0-9]/.test(newPassword)
+                      ? "text-green-600 dark:text-green-400"
+                      : newPassword.length >= 8
+                        ? "text-yellow-600 dark:text-yellow-400"
+                        : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {newPassword.length >= 12 &&
+                  /[A-Z]/.test(newPassword) &&
+                  /[a-z]/.test(newPassword) &&
+                  /\d/.test(newPassword) &&
+                  /[^A-Za-z0-9]/.test(newPassword)
+                    ? "Strong"
+                    : newPassword.length >= 8
+                      ? "Medium"
+                      : "Weak"}
+                </span>
+              </div>
+
+              <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    newPassword.length >= 12 &&
+                    /[A-Z]/.test(newPassword) &&
+                    /[a-z]/.test(newPassword) &&
+                    /\d/.test(newPassword) &&
+                    /[^A-Za-z0-9]/.test(newPassword)
+                      ? "w-full bg-green-500"
+                      : newPassword.length >= 8
+                        ? "w-2/3 bg-yellow-500"
+                        : "w-1/3 bg-red-500"
+                  }`}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="flex min-w-48 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-700 to-cyan-600 px-6 py-3.5 font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            >
+              {changingPassword ? (
+                <>
+                  <RefreshCw
+                    size={19}
+                    className="animate-spin"
+                  />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Lock size={19} />
+                  Update Password
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+
 
       {/* Footer */}
 

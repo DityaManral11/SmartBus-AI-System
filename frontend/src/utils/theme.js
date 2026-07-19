@@ -1,18 +1,20 @@
+export const THEME_STORAGE_KEY = "smartbus_dark_mode";
+
 export function applyTheme(isDark) {
   document.documentElement.classList.toggle(
     "dark",
-    isDark
+    Boolean(isDark)
   );
 
   localStorage.setItem(
-    "smartbus_dark_mode",
-    String(isDark)
+    THEME_STORAGE_KEY,
+    String(Boolean(isDark))
   );
 }
 
 export function getSavedTheme() {
   return (
-    localStorage.getItem("smartbus_dark_mode") ===
+    localStorage.getItem(THEME_STORAGE_KEY) ===
     "true"
   );
 }
