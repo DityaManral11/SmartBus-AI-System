@@ -3,13 +3,13 @@ import {
   Bus,
   Users,
   MapPinned,
+  Bell,
   User,
   Settings,
   LogOut,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const menus = [
   {
@@ -33,6 +33,11 @@ const menus = [
     path: "/driver/live",
   },
   {
+    name: "Notifications",
+    icon: <Bell size={20} />,
+    path: "/driver/notifications",
+  },
+  {
     name: "Profile",
     icon: <User size={20} />,
     path: "/driver/profile",
@@ -48,19 +53,27 @@ export default function DriverSidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("user");
+    const confirmed = window.confirm(
+      "Are you sure you want to logout?"
+    );
 
-    navigate("/", { replace: true });
+    if (!confirmed) return;
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
+
+    sessionStorage.clear();
+
+    navigate("/login/driver", { replace: true });
   };
+
   return (
     <div className="fixed left-0 top-0 w-72 h-screen bg-slate-900 text-white flex flex-col justify-between shadow-2xl">
-
       <div>
-
         <div className="p-8 border-b border-slate-700">
-
           <h1 className="text-3xl font-bold text-cyan-400">
             SmartBus
           </h1>
@@ -68,45 +81,38 @@ export default function DriverSidebar() {
           <p className="text-slate-400 mt-2">
             Driver Panel
           </p>
-
         </div>
 
         <div className="mt-8 px-4">
-
           {menus.map((item) => (
-
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-5 py-4 rounded-2xl mb-3 transition-all ${isActive
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-500"
-                  : "hover:bg-slate-800"
+                `flex items-center gap-4 px-5 py-4 rounded-2xl mb-3 transition-all ${
+                  isActive
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-500"
+                    : "hover:bg-slate-800"
                 }`
               }
             >
               {item.icon}
               {item.name}
             </NavLink>
-
           ))}
-
         </div>
-
       </div>
 
       <div className="p-5 border-t border-slate-700">
-
         <button
+          type="button"
           onClick={handleLogout}
           className="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 flex items-center gap-4 transition"
         >
           <LogOut size={22} />
           Logout
         </button>
-
       </div>
-
     </div>
   );
 }

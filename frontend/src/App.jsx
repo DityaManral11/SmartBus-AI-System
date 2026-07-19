@@ -24,6 +24,7 @@ import Analytics from "./pages/admin/Analytics";
 import Reports from "./pages/admin/Reports";
 import Settings from "./pages/admin/Settings";
 import AdminProfile from "./pages/admin/Profile";
+import AdminNotifications from "./pages/admin/Notifications";
 
 // ================= STUDENT =================
 import StudentLayout from "./layouts/StudentLayout";
@@ -43,6 +44,7 @@ import DriverStudents from "./pages/driver/Students";
 import DriverLiveLocation from "./pages/driver/LiveLocation";
 import DriverProfile from "./pages/driver/Profile";
 import DriverSettings from "./pages/driver/Settings";
+import DriverNotifications from "./pages/driver/Notifications";
 
 function App() {
   return (
@@ -50,10 +52,7 @@ function App() {
       <Routes>
         {/* ================= PUBLIC ROUTES ================= */}
 
-        <Route
-          path="/"
-          element={<ChooseRole />}
-        />
+        <Route path="/" element={<ChooseRole />} />
 
         <Route
           path="/login/:role"
@@ -147,6 +146,11 @@ function App() {
           />
 
           <Route
+            path="notifications"
+            element={<DriverNotifications />}
+          />
+
+          <Route
             path="profile"
             element={<DriverProfile />}
           />
@@ -210,6 +214,11 @@ function App() {
           <Route
             path="reports"
             element={<Reports />}
+          />
+
+          <Route
+            path="notifications"
+            element={<AdminNotifications />}
           />
 
           <Route

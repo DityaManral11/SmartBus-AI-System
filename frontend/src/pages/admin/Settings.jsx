@@ -283,10 +283,14 @@ export default function SettingsPage() {
     if (!confirmed) return;
 
     localStorage.removeItem("token");
+    localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
 
-    window.location.href = "/login";
+    sessionStorage.clear();
+
+    window.location.replace("/login/admin");
   };
 
   if (loading) {

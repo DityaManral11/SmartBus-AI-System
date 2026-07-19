@@ -155,8 +155,17 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to logout?");
+    const confirmed = window.confirm(
+      "Are you sure you want to logout?"
+    );
+
     if (!confirmed) return;
+
+    const loginRole =
+      currentUser?.role ||
+      localStorage.getItem("userRole") ||
+      userRole ||
+      "admin";
 
     localStorage.removeItem("token");
     localStorage.removeItem("isLoggedIn");
@@ -164,7 +173,13 @@ export default function Navbar() {
     localStorage.removeItem("user");
     localStorage.removeItem("userRole");
 
-    navigate(`/login/${userRole}`, { replace: true });
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("currentUser");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("userRole");
+
+    window.location.replace(`/login/${loginRole}`);
   };
 
   const handleNotificationToggle = () => {
