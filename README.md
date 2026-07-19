@@ -1,164 +1,207 @@
-# 🚌 SmartBus AI System
+# 🚍 SmartBus AI System
 
-A full-stack Smart Bus Management System built using React, Node.js, Express, and MySQL.
+A full-stack Smart Bus Management System developed to streamline university transportation through real-time bus tracking, route management, attendance monitoring, and role-based dashboards.
 
-The system helps administrators, drivers, and students manage university transportation efficiently with authentication, dashboards, attendance tracking, notifications, and live bus tracking.
+The system provides separate portals for **Admin**, **Driver**, and **Student**, making transportation management efficient, secure, and user-friendly.
 
 ---
 
-# 🚀 Features
+## ✨ Features
 
-## Authentication
-- Admin Login & Registration
-- Driver Login & Registration
-- Student Login & Registration
+### 👨‍💼 Admin Module
+
+- Secure Authentication
+- Dashboard Analytics
+- Bus Management
+- Driver Management
+- Student Management
+- Route Management
+- Bus Assignment
+- Attendance Reports
+- Driver Reports
+- Bus Reports
+- Notifications
+- Live Bus Tracking
+
+---
+
+### 🚌 Driver Module
+
+- Secure Login
+- Dashboard
+- Assigned Route
+- Assigned Students
+- Live Location Sharing
+- Profile Management
+- Settings
+- Change Password
+- Forgot Password
+
+---
+
+### 🎓 Student Module
+
+- Secure Login
+- Dashboard
+- My Bus Details
+- Live Bus Tracking
+- Attendance
+- Notifications
+- Profile
+- Settings
+- Change Password
+- Forgot Password
+
+---
+
+## 🔐 Authentication
+
 - JWT Authentication
 - Role-Based Authorization
+- Password Encryption using bcrypt
+- Forgot Password Verification
 
-## Bus Management
-- Add, Update, Delete Buses
-- View Bus Details
+Student verification:
+- Email + Roll Number
 
-## Route Management
-- Manage Routes
-- Manage Route Stops
-- Bus-Route Assignment
+Driver verification:
+- Email + License Number
 
-## Student Management
-- Student CRUD
-- Student Bus Assignment
-
-## Driver Management
-- Driver CRUD
-- Driver Assignment
-
-## Schedule Management
-- Create & Manage Bus Schedules
-
-## Attendance
-- Mark Attendance
-- Student Attendance History
-- Daily Attendance
-- Checkout Attendance
-
-## Notifications
-- Send Notifications
-- Mark Read
-- Read All
-- Delete Notifications
-
-## Live Bus Tracking
-- Update Bus Location
-- View Live Bus Location
-
-## Dashboards
-- Admin Dashboard
-- Driver Dashboard
-- Student Dashboard
-
-## Reports
-- Attendance Report
-- Driver Report
-- Bus Report
+Admin verification:
+- Email + Secret Key
 
 ---
 
-# 🛠 Tech Stack
+## 🛠 Tech Stack
 
 ### Frontend
+
 - React.js
+- Vite
 - Tailwind CSS
-- JavaScript
+- React Router
+- Axios
+- Lucide React
+- Leaflet.js
 
 ### Backend
+
 - Node.js
 - Express.js
-
-### Database
 - MySQL
-
-### Authentication
 - JWT
 - bcrypt
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```
-SmartBus-AI
-│
-├── frontend
+SmartBus-AI-System
 │
 ├── backend
 │   ├── controllers
 │   ├── middleware
 │   ├── routes
+│   ├── services
 │   ├── db.js
-│   ├── server.js
-│   └── package.json
+│   └── server.js
+│
+├── frontend
+│   ├── src
+│   │   ├── pages
+│   │   ├── components
+│   │   ├── layouts
+│   │   ├── services
+│   │   └── App.jsx
 │
 └── README.md
 ```
 
 ---
 
-# ⚙️ Installation
+## ⚙ Installation
 
-## Backend
+### Backend
 
 ```bash
 cd backend
+
 npm install
+
 npm run dev
 ```
 
-## Frontend
+### Frontend
 
 ```bash
 cd frontend
+
 npm install
+
 npm run dev
 ```
 
 ---
 
-# 🔐 Environment Variables
+## 🔑 Environment Variables
 
-Create a `.env` file inside the backend folder.
+Backend `.env`
 
-```
+```env
 PORT=5000
+
 DB_HOST=localhost
-DB_USER=root
+DB_USER=your_username
 DB_PASSWORD=your_password
 DB_NAME=smartbus_db
 
-JWT_SECRET=your_secret
+JWT_SECRET=your_jwt_secret
 
-ADMIN_SECRET_KEY=your_secret
+ADMIN_SECRET_KEY=your_admin_secret
 ```
 
 ---
 
-# 📌 API Modules
+## 📊 Modules
 
 - Authentication
-- Students
-- Drivers
-- Buses
-- Routes
-- Route Stops
-- Bus Routes
-- Schedules
+- Student Management
+- Driver Management
+- Bus Management
+- Route Management
 - Attendance
+- Reports
 - Notifications
 - Live Bus Tracking
-- Dashboards
-- Reports
+- Settings
+- Password Recovery
 
 ---
 
-# 👩‍💻 Developed By
+## 🚀 Future Enhancements
 
-DITYA MANRAL
+- Google Maps Integration
+- Push Notifications
+- AI-based Route Optimization
+- Parent Portal
+- Mobile Application
+- QR Code Attendance
+- GPS Hardware Integration
+
+---
+
+## 👩‍💻 Author
+
+**Ditya Manral**
+
+GitHub:
+https://github.com/DityaManral11
+
+---
+
+## ⭐ Support
+
+If you like this project,
+
+⭐ Star this repository.
