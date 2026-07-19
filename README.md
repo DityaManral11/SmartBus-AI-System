@@ -1,16 +1,18 @@
 # 🚍 SmartBus AI System
 
-A full-stack Smart Bus Management System developed to streamline university transportation through real-time bus tracking, route management, attendance monitoring, and role-based dashboards.
+A full-stack Smart Bus Management System developed to streamline university transportation through **real-time bus tracking**, **route management**, **attendance monitoring**, and **role-based dashboards**.
 
 The system provides separate portals for **Admin**, **Driver**, and **Student**, making transportation management efficient, secure, and user-friendly.
 
 ---
 
-##Live Demo
+## 🌐 Live Demo
 
-###Frontend - https://smart-bus-ai-system.vercel.app
+**Frontend:** https://smart-bus-ai-system.vercel.app
 
-###Backend - https://smartbus-ai-system.onrender.com
+**Backend:** https://smartbus-ai-system.onrender.com
+
+---
 
 ## ✨ Features
 
@@ -64,23 +66,26 @@ The system provides separate portals for **Admin**, **Driver**, and **Student**,
 
 - JWT Authentication
 - Role-Based Authorization
-- Password Encryption using bcrypt
+- Password Encryption using **bcrypt**
 - Forgot Password Verification
 
-Student verification:
+### Student Verification
+
 - Email + Roll Number
 
-Driver verification:
+### Driver Verification
+
 - Email + License Number
 
-Admin verification:
+### Admin Verification
+
 - Email + Secret Key
 
 ---
 
 ## 🛠 Tech Stack
 
-### Frontend
+### 🎨 Frontend
 
 - React.js
 - Vite
@@ -90,7 +95,7 @@ Admin verification:
 - Lucide React
 - Leaflet.js
 
-### Backend
+### ⚙️ Backend
 
 - Node.js
 - Express.js
@@ -102,7 +107,7 @@ Admin verification:
 
 ## 📂 Project Structure
 
-```
+```text
 SmartBus-AI-System
 │
 ├── backend
@@ -126,15 +131,13 @@ SmartBus-AI-System
 
 ---
 
-## ⚙ Installation
+## ⚙️ Installation
 
 ### Backend
 
 ```bash
 cd backend
-
 npm install
-
 npm run dev
 ```
 
@@ -142,9 +145,7 @@ npm run dev
 
 ```bash
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
@@ -152,7 +153,7 @@ npm run dev
 
 ## 🔑 Environment Variables
 
-Backend `.env`
+### Backend `.env`
 
 ```env
 PORT=5000
@@ -201,13 +202,10 @@ ADMIN_SECRET_KEY=your_admin_secret
 
 **Ditya Manral**
 
-GitHub:
-https://github.com/DityaManral11
+GitHub: https://github.com/DityaManral11
 
 ---
 
 ## ⭐ Support
 
-If you like this project,
-
-⭐ Star this repository.
+If you like this project, consider giving it a ⭐ on GitHub!
