@@ -6,6 +6,12 @@ The system provides separate portals for **Admin**, **Driver**, and **Student**,
 
 ---
 
+##Live Demo
+
+###Frontend - https://smart-bus-ai-system.vercel.app
+
+###Backend - https://smartbus-ai-system.onrender.com
+
 ## ✨ Features
 
 ### 👨‍💼 Admin Module
