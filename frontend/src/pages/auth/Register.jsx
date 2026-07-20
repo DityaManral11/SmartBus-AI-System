@@ -10,16 +10,11 @@ import {
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-
 export default function Register() {
-
-
   const location = useLocation();
-
   const defaultRole = location.state?.role || "";
 
   const [role] = useState(defaultRole);
-
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -32,7 +27,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [adminKey, setAdminKey] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -68,6 +63,16 @@ export default function Register() {
       return;
     }
 
+    if (password.length < 6 || password.length > 8) {
+      setError("Password must be between 6 and 8 characters.");
+      return;
+    }
+
+    if (confirmPassword.length < 6 || confirmPassword.length > 8) {
+      setError("Confirm password must be between 6 and 8 characters.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -98,15 +103,9 @@ export default function Register() {
         payload.secret_key = adminKey.trim();
       }
 
-      const response = await api.post(
-        `/auth/${role}/register`,
-        payload
-      );
+      const response = await api.post(`/auth/${role}/register`, payload);
 
-      alert(
-        response.data?.message || "Registration successful!"
-      );
-
+      alert(response.data?.message || "Registration successful!");
       navigate(`/login/${role}`);
     } catch (error) {
       console.error("Registration error:", error);
@@ -122,10 +121,8 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-blue-900 via-blue-700 to-cyan-500">
-
       {/* Left Side */}
       <div className="hidden lg:flex w-1/2 items-center justify-center relative overflow-hidden">
-
         <div className="absolute w-80 h-80 bg-white/10 rounded-full blur-3xl top-10 left-20"></div>
         <div className="absolute w-96 h-96 bg-cyan-300/10 rounded-full blur-3xl bottom-0 right-0"></div>
 
@@ -149,20 +146,16 @@ export default function Register() {
             <p>🔒 Secure Login</p>
           </div>
         </motion.div>
-
       </div>
 
       {/* Right Side */}
-
       <div className="flex-1 flex items-center justify-center p-5">
-
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
           className="w-full max-w-md bg-white/15 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl p-8"
         >
-
           <h2 className="text-4xl font-bold text-white">
             Create Account 🚍
           </h2>
@@ -172,7 +165,6 @@ export default function Register() {
           </p>
 
           {/* Name */}
-
           <div className="relative mb-4">
             <FaUser className="absolute left-4 top-4 text-gray-500" />
 
@@ -180,13 +172,15 @@ export default function Register() {
               type="text"
               placeholder="Full Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError("");
+              }}
               className="w-full pl-12 py-4 rounded-xl outline-none bg-white"
             />
           </div>
 
           {/* Email */}
-
           <div className="relative mb-4">
             <FaEnvelope className="absolute left-4 top-4 text-gray-500" />
 
@@ -194,27 +188,29 @@ export default function Register() {
               type="email"
               placeholder="Email Address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
               className="w-full pl-12 py-4 rounded-xl outline-none bg-white"
             />
           </div>
 
           {/* Phone */}
-
           <div className="relative mb-4">
-
             <input
               type="text"
               placeholder="Phone Number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                setError("");
+              }}
               className="w-full px-4 py-4 rounded-xl outline-none bg-white"
             />
-
           </div>
 
-          {/*For Student*/}
-
+          {/* Student Fields */}
           {role === "student" && (
             <>
               <div className="mb-4">
@@ -222,7 +218,10 @@ export default function Register() {
                   type="text"
                   placeholder="Roll Number"
                   value={rollNo}
-                  onChange={(e) => setRollNo(e.target.value)}
+                  onChange={(e) => {
+                    setRollNo(e.target.value);
+                    setError("");
+                  }}
                   className="w-full px-4 py-4 rounded-xl outline-none bg-white"
                 />
               </div>
@@ -232,54 +231,64 @@ export default function Register() {
                   type="text"
                   placeholder="Semester"
                   value={semester}
-                  onChange={(e) => setSemester(e.target.value)}
+                  onChange={(e) => {
+                    setSemester(e.target.value);
+                    setError("");
+                  }}
                   className="w-full px-4 py-4 rounded-xl outline-none bg-white"
                 />
               </div>
             </>
           )}
 
-          {/*For driver*/}
-
+          {/* Driver Field */}
           {role === "driver" && (
             <div className="mb-4">
               <input
                 type="text"
                 placeholder="License Number"
                 value={licenseNo}
-                onChange={(e) => setLicenseNo(e.target.value)}
+                onChange={(e) => {
+                  setLicenseNo(e.target.value);
+                  setError("");
+                }}
                 className="w-full px-4 py-4 rounded-xl outline-none bg-white"
               />
             </div>
           )}
 
-          {/* For Admin */}
-
+          {/* Admin Field */}
           {role === "admin" && (
             <div className="mb-4">
               <input
                 type="password"
                 placeholder="Admin Secret Key"
                 value={adminKey}
-                onChange={(e) => setAdminKey(e.target.value)}
+                onChange={(e) => {
+                  setAdminKey(e.target.value);
+                  setError("");
+                }}
                 className="w-full px-4 py-4 rounded-xl outline-none bg-white"
               />
             </div>
           )}
 
-
-
           {/* Password */}
-
           <div className="relative mb-4">
-
             <FaLock className="absolute left-4 top-4 text-gray-500" />
 
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="Password (6-8 characters)"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError("");
+              }}
+              minLength={6}
+              maxLength={8}
+              autoComplete="new-password"
+              required
               className="w-full pl-12 pr-12 py-4 rounded-xl outline-none bg-white"
             />
 
@@ -287,35 +296,53 @@ export default function Register() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-4 text-gray-500"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-
           </div>
 
           {/* Confirm Password */}
-
           <div className="relative mb-6">
-
             <FaLock className="absolute left-4 top-4 text-gray-500" />
 
             <input
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm Password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full pl-12 py-4 rounded-xl outline-none bg-white"
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setError("");
+              }}
+              minLength={6}
+              maxLength={8}
+              autoComplete="new-password"
+              required
+              className="w-full pl-12 pr-12 py-4 rounded-xl outline-none bg-white"
             />
 
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-4 top-4 text-gray-500"
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+            >
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
 
           {error && (
             <div className="mb-4 rounded-xl bg-red-100 px-4 py-3 text-red-700">
               {error}
             </div>
-         )}
+          )}
 
           <button
+            type="button"
             onClick={handleRegister}
             disabled={loading}
             className="w-full py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-cyan-500 hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
@@ -324,7 +351,6 @@ export default function Register() {
           </button>
 
           <p className="text-center text-white mt-8">
-
             Already have an account?
 
             <Link
@@ -333,13 +359,9 @@ export default function Register() {
             >
               Login
             </Link>
-
           </p>
-
         </motion.div>
-
       </div>
-
     </div>
   );
 }
